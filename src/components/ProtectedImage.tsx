@@ -11,7 +11,7 @@ export default function ProtectedImage({src, width, height, classname}: {src: st
     src,
     quality: 'auto',
     format: 'webp',
-    transformations: ["protect_astro"],
+    transformations: [],
   });
 
   useEffect(() => {

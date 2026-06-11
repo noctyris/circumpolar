@@ -1,19 +1,30 @@
 export interface filter_t {
-  type: string;
+  filter: string;
   exposure: number;
   count: number;
 }
 
 export interface Picture {
-  id: number;
-  title: string;
-  publicID: string;
-  capture_date?: string; // ISO string
-  scope?: string;
-  camera?: string;
-  filters?: filter_t[];
-  stacking?: string;
-  type?: string;
+  id:                   number;
+  title:                string;
+  target:               string;
+  publicid:             string;
+  annotated_publicid?:  string;
+  capture_date:         string;
+  optics:               string;
+  camera:               string;
+  mount:                string;
+  accessories?:         string;
+  focal_length?:        number;
+  f_number?:            number;
+  capture_data:         filter_t[];
+  processing_software?: string;
+  ra?:                  number;
+  dec?:                 number;
+  bortle_class?:        number;
+  location?:            string;
+  target_category:      string;
+  upload_date:          string;
 }
 
 export function formatDuration(seconds: number): string {

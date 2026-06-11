@@ -26,9 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({
-  children,
+  children, modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   const session = await auth();
 
@@ -37,8 +38,7 @@ export default async function RootLayout({
       <body
         className="font-geist antialiased text-white"
       >
-        <h1 className="font-title text-3xl md:text-5xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-4 mb-0">Circumpolar</h1>
-        <SessionProvider session={session}>{children}</SessionProvider>
+        <SessionProvider session={session}>{children}{modal}<div id="modal-root" /></SessionProvider>
       </body>
     </html>
   );
