@@ -32,7 +32,7 @@ export default function ImagePageClient({ image }: { image: Picture }) {
                   <div className="space-y-1">
                      <p className="text-[10px] font-geist text-white/30 uppercase">Longueur focale</p>
                      <p className="font-mono text-sm">{image.focal_length}</p>
-                     <p className="text-[10px] font-geist text-white/30 uppercase">Valeur d'ouverture (nombre f)</p>
+                     <p className="text-[10px] font-geist text-white/30 uppercase">Valeur d{"'"}ouverture (nombre f)</p>
                      <p className="font-mono text-sm">{image.f_number}</p>
                   </div>
                </div>
