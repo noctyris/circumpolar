@@ -63,15 +63,15 @@ export default function ImageModalClient({ image }: { image: Picture }) {
                 )}
                     <div className="space-y-1">
                        <p className="text-[10px] font-geist text-white/30 uppercase">Longueur focale</p>
-                       <p className="font-mono text-sm">{image.focal_length}</p>
-                       <p className="text-[10px] font-geist text-white/30 uppercase">Valeur d{"'"}ouverture (nombre f)</p>
-                       <p className="font-mono text-sm">{image.f_number}</p>
+                       <p className="font-mono text-sm">{image.focal_length} mm</p>
+                       <p className="text-[10px] font-geist text-white/30 uppercase">Valeur d{"'"}ouverture</p>
+                       <p className="font-mono text-sm">f/{image.f_number}</p>
                     </div>
                  </div>
               </section>
 
               <section className="space-y-4">
-                 <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 border-b border-white/5 pb-2">Equipment</h3>
+                 <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 border-b border-white/5 pb-2">Équipement</h3>
                  <ul className="text-sm font-geist text-white/70 space-y-2 italic">
                    <li>{image.optics}</li>
                    <li>{image.camera}</li>
