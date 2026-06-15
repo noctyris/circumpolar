@@ -47,6 +47,9 @@ export default function ImageModalClient({ image }: { image: Picture }) {
               <span className="text-accent font-mono text-[10px] tracking-[0.3em] uppercase mb-2 block">{image.target_category}</span>
               <h2 className="font-syncopate text-3xl leading-tight tracking-tighter">{image.title || image.target}</h2>
               {image.title && <span className="text-accent font-mono text-l tracking-[0.3em] uppercase my-2 block text-center text-white/60">– {image.target} –</span>}
+              <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 pb-2 text-center">
+                {new Intl.DateTimeFormat('fr-FR').format(new Date(image.capture_date))}
+              </h3>
             </header>
 
             <section className="space-y-4">
@@ -55,9 +58,8 @@ export default function ImageModalClient({ image }: { image: Picture }) {
                 {image.capture_data && (
                    <div className="space-y-1">
                      <p className="text-[10px] font-geist text-white/30 uppercase">Capture{image.capture_data.length>1 && "s"}</p>
-                       {/*<p className="font-mono text-sm"></p>*/}
                        {image.capture_data.map((f, i) => (
-                         <p key={i} className="font-mono text-sm">{f.filter}: {formatDuration(f.exposure)} * {f.count}</p>
+                         <p key={i} className="font-mono text-sm">{f.filter}: {formatDuration(f.exposure)} × {f.count}</p>
                        ))}
                     </div>
                 )}
