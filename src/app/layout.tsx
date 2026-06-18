@@ -1,41 +1,44 @@
-import { Montserrat_Alternates, Montserrat } from "next/font/google";
+import { Syncopate, Sora, Geist } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
-import LayoutInfo from "@/components/LayoutInfo";
 import type { Metadata } from "next";
 import { auth } from "@root/auth"
 import "./globals.css";
 
-const montserratAlternates = Montserrat_Alternates({
-  variable: "--font-montserrat-alternates",
-  subsets: ["latin"],
-  weight: "500",
+const syncopate = Syncopate({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-syncopate',
 });
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: "500",
+const sora = Sora({
+  subsets: ['latin'],
+  variable: '--font-sora',
+});
+
+const geist = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist',
 });
 
 export const metadata: Metadata = {
   title: "Circumpolar",
-  description: "Galerie d'astro",
+  description: "",
 };
 
 export default async function RootLayout({
-  children,
+  children, modal
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   const session = await auth();
 
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${syncopate.variable} ${sora.variable} ${geist.variable} dark`}>
       <body
-        className={`${montserrat.className} ${montserratAlternates.variable} antialiased py-2`}
+        className="font-geist antialiased text-white"
       >
-        <LayoutInfo className={`${montserratAlternates.className}`} isAuth={!!session} />
-        <SessionProvider session={session}>{children}</SessionProvider>
+        <SessionProvider session={session}>{children}{modal}<div id="modal-root" /></SessionProvider>
       </body>
     </html>
   );

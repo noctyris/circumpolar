@@ -2,15 +2,16 @@
 import { getCldImageUrl } from "next-cloudinary";
 import { useEffect, useRef } from "react";
 
-export default function ProtectedImage({src, width, height, classname}: {src: string, width: string, height: string, classname: string}) {
+export default function ProtectedImage({src, width, height, classname}: {src: string, width?: string, height?: string, classname: string}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const url = getCldImageUrl({
-    width,
-    height,
+    width: width || "800",
+    height: height,
     src,
     quality: 'auto',
-    format: 'png',
-    transformations: ["protect_astro"],
+    format: 'webp',
+    transformations: [],
   });
 
   useEffect(() => {
@@ -30,9 +31,19 @@ export default function ProtectedImage({src, width, height, classname}: {src: st
   }, [url]);
 
   return (
-    <div className="relative group">
-      <canvas ref={canvasRef} onContextMenu={(e) => e.preventDefault()} className={classname} style={{userSelect: 'none', touchAction: 'none'}} />
-      <div className="absolute inset-0 z-10" onContextMenu={(e) => e.preventDefault()} />
+    <div className="relative group cursor-zoom-in">
+      <canvas 
+        ref={canvasRef} 
+        onContextMenu={(e) => e.preventDefault()} 
+        className={`${classname} h-auto`} 
+        style={{ userSelect: 'none', touchAction: 'none' }} 
+      />
+      <div 
+        className="absolute inset-0 z-10" 
+        onContextMenu={(e) => e.preventDefault()} 
+        onDragStart={(e) => e.preventDefault()}
+      />
     </div>
   );
 }
+

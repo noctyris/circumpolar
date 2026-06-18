@@ -1,20 +1,16 @@
+import { fetchImages } from "./lib/data";
+import Grid from "@/components/home/Grid";
+
 export const dynamic = "force-dynamic";
 
-import { fetchImages } from "@/app/lib/data";
-import ImageCard from "@/components/ImageCard";
-import { Picture } from "@/types";
-
 export default async function Home() {
-  const rawPictures = await fetchImages();
-  const pictures = rawPictures.map((pic) => (
-    <ImageCard key={pic.id} pic={pic as Picture} />
-  ));
+  const raw_images = await fetchImages();
 
   return (
-    <>
-      <main className="m-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 m-w-[1200px] mx-auto">
-        {pictures}
-      </main>
-    </>
+    <main className="max-w-7xl mx-auto p-4">
+      <h1 className="font-title text-3xl md:text-5xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-4">Circumpolar</h1>
+      <Grid images={raw_images} />
+    </main>
   );
 }
+

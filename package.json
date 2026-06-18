@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "NODE_OPTIONS='--no-deprecation' next dev --turbopack",
+    "build": "NODE_OPTIONS='--no-deprecation' next build",
+    "start": "NODE_OPTIONS='--no-deprecation' next start",
+    "lint": "NODE_OPTIONS='--no-deprecation' next lint"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -17,7 +17,8 @@
     "next-cloudinary": "^6.16.0",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-masonry-css": "^1.0.16"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

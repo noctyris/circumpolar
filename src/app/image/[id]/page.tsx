@@ -1,20 +1,14 @@
-import { use } from "react";
-import { notFound } from "next/navigation";
-import { fetchImages } from "@/app/lib/data";
-import ImagePage from "@/components/ImagePage";
+// app/image/[id]/page.tsx
+import { fetchSingleImage } from "@/app/lib/data";
+import ImagePageClient from "@/components/ImagePageClient";
 
-export default function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const images = use(fetchImages());
-  const image = images.find((img) => img.id.toString() === id);
+export default async function ImagePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const images = await fetchSingleImage(id);
+  const image = images[0];
 
-  if (!image) notFound();
+  if (!image) return null;
 
-  if (!image) return <p>Image not found</p>;
-
-  return (
-    <div>
-      <ImagePage pic={image} />
-    </div>
-  );
+  return <ImagePageClient image={image} />;
 }
+
