@@ -3,11 +3,11 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
 import sql from "@/app/lib/data";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-async function getUser(email: string) {
-  const user = await sql`SELECT * FROM users WHERE username=${email}`;
+async function getUser(username: string) {
+  const user = await sql`SELECT * FROM users WHERE username=${username}`;
   return user[0];
 }
 
@@ -17,15 +17,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         const parsed = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({ password: z.string().min(6) })
           .safeParse(credentials);
         if (!parsed.success) return null;
 
-        const { email, password } = parsed.data;
-        const user = await getUser(email);
+        const { password } = parsed.data;
+        const user = await getUser("admin");
+        console.log(user, password, typeof user.password, JSON.stringify(user.password))
         if (!user) return null;
 
-        const valid = await bcrypt.compare(password, user.password);
+        const valid = await bcrypt.compare(password, user.password.trim());
         if (!valid) return null;
 
         return user;
