@@ -1,3 +1,4 @@
+import AdminAccessButton from '@/components/AdminAccessButton';
 import { Syncopate, Sora, Geist } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import type { Metadata } from "next";
@@ -39,9 +40,9 @@ export default async function RootLayout({
                 className="font-geist antialiased text-white"
             >
                 <SessionProvider session={session}>{modal}<div id="modal-root" />
-                    <header className="max-w-7xl mx-auto p-4 pb-0">
+                    <header className="max-w-7xl mx-auto p-4 pb-0 flex items-center justify-between">
                         <h1 className="font-title text-3xl md:text-5xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-4">Circumpolar</h1>
-
+                        <AdminAccessButton isAuth={!!session} />
                     </header>
                     <main className="max-w-7xl mx-auto p-4">
                         {children}
