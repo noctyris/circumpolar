@@ -37,7 +37,7 @@ export default function UploadPage() {
     const [fNumber, setFNumber] = useState<number>();
 
     // Capture & Processing
-    const [captureRows, setCaptureRows] = useState<CaptureRow[]>("");
+    const [captureRows, setCaptureRows] = useState<CaptureRow[]>([]);
     const [processingSoftwares, setProcessingSoftwares] = useState("");
 
     // Coords & Sky
