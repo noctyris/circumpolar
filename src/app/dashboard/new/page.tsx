@@ -1,7 +1,7 @@
 "use client";
 
 import { CloudinaryUploadWidgetResults } from "next-cloudinary";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
 import UploadButton from '@/components/UploadButton';
@@ -49,6 +49,33 @@ export default function UploadPage() {
     const [bortleClass, setBortleClass] = useState<number | "">("");
     const [location, setLocation] = useState("");
 
+    const [suggestions, setSuggestions] = useState<{
+        optics: string[];
+        camera: string[];
+        mount: string[];
+        accessories: string[];
+        processing_softwares: string[];
+        location: string[];
+        filters: string[];
+    }>({
+        optics: [],
+        camera: [],
+        mount: [],
+        accessories: [],
+        processing_softwares: [],
+        location: [],
+        filters: [],
+    });
+
+    useEffect(() => {
+        fetch("/api/pictures/suggestions")
+            .then((res) => res.json())
+            .then((data) => {
+                if (!data.error) setSuggestions(data);
+            })
+            .catch(console.error)
+    }, []);
+
     const addCaptureRow = () => {
         setCaptureRows([...captureRows, {filter: "", count: "", exposure: ""}])
     };
@@ -85,7 +112,7 @@ export default function UploadPage() {
             capture_date: captureDate,
             optics,
             camera,
-            mount,
+            mount: mount || null,
             accessories: accessories || null,
             focal_length: focalLength !== "" ? Number(focalLength) : null,
             f_number: fNumber !== "" ? Number(fNumber) : null,
@@ -149,11 +176,7 @@ export default function UploadPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">PublicID Cloudinary (annoté)</label>
-                            <UploadButton
-                                resource={annotatedPublicId}
-                                setResource={setAnnotatedPublicId}
-                                handler={handleAnnotatedUploadSuccess}
-                                label="Uploader la version annotée"
+                            <UploadButton resource={annotatedPublicId} setResource={setAnnotatedPublicId} handler={handleAnnotatedUploadSuccess} label="Uploader la version annotée"
                             />
                         </div>
                     </div>
@@ -163,19 +186,39 @@ export default function UploadPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Optique / Télescope<RequiredField /></label>
-                            <input required type="text" value={optics} onChange={(e) => setOptics(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <input required type="text" list="optics-list" value={optics} onChange={(e) => setOptics(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <datalist id="optics-list">
+                                {suggestions.optics.map((item) => (
+                                    <option key={item} value={item} />
+                                ))}
+                            </datalist>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Caméra / Capteur<RequiredField /></label>
-                            <input required type="text" value={camera} onChange={(e) => setCamera(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <input required type="text" list="camera-list" value={camera} onChange={(e) => setCamera(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <datalist id="camera-list">
+                                {suggestions.camera.map((item) => (
+                                    <option key={item} value={item} />
+                                ))}
+                            </datalist>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Monture<RequiredField /></label>
-                            <input required type="text" value={mount} onChange={(e) => setMount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <label className="block text-sm font-medium mb-1">Monture</label>
+                            <input type="text" list="mount-list" value={mount} onChange={(e) => setMount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <datalist id="mount-list">
+                                {suggestions.mount.map((item) => (
+                                    <option key={item} value={item} />
+                                ))}
+                            </datalist>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Accessoires</label>
-                            <input type="text" value={accessories} onChange={(e) => setAccessories(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <input type="text" list="accessories-list" value={accessories} onChange={(e) => setAccessories(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <datalist id="accessories-list">
+                                {suggestions.accessories.map((item) => (
+                                    <option key={item} value={item} />
+                                ))}
+                            </datalist>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Focale (mm)</label>
@@ -193,17 +236,27 @@ export default function UploadPage() {
                         <label className="block text-sm font-medium">Poses<RequiredField /></label>
                         {captureRows.map((row, index) => (
                             <div className="flex gap-2 items-center" key={index}>
-                                <input type="text" placeholder="Filtre / Type" value={row.filter} onChange={(e) => updateCaptureRow(index, "filter", e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
+                                <input type="text" list="filters-list" placeholder="Filtre / Type" value={row.filter} onChange={(e) => updateCaptureRow(index, "filter", e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
                                 <input type="number" placeholder="Nombre" value={row.count || ""} onChange={(e) => updateCaptureRow(index, "count", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
                                 <input type="number" placeholder="Temps d'exposition (s)" value={row.exposure} onChange={(e) => updateCaptureRow(index, "exposure", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
                                 <button type="button" onClick={() => removeCaptureRow(index)} className="px-3 py-2 bg-red-500/2 text-red-400 hover:bg-red-500/30 rounded">×</button>
                             </div>
                         ))}
+                        <datalist id="filters-list">
+                            {suggestions.filters.map((f) => (
+                                <option key={f} value={f} />
+                            ))}
+                        </datalist>
                         <button type="button" onClick={addCaptureRow} className="text-sm text-cyan-400 hover:underline pt-1 block"> + Ajouter une ligne de poses</button>
                     </div>
                     <div className="pt-2">
                         <label className="block text-sm font-medium mb-1">Logiciels de traitement</label>
-                        <input type="text" value={processingSoftwares} onChange={(e) => setProcessingSoftwares(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
+                        <input type="text" list="processing-softwares-list" value={processingSoftwares} onChange={(e) => setProcessingSoftwares(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
+                        <datalist id="processing-softwares-list">
+                            {suggestions.processing_softwares.map((item) => (
+                                <option key={item} value={item} />
+                            ))}
+                        </datalist>
                     </div>
                 </section>
                 <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
@@ -211,7 +264,12 @@ export default function UploadPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium mb-1">Lieu</label>
-                            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
+                            <input type="text" list="location-list" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
+                            <datalist id="location-list">
+                                {suggestions.location.map((item) => (
+                                    <option key={item} value={item} />
+                                ))}
+                            </datalist>
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Classe Bortle</label>

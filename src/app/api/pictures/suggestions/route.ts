@@ -10,7 +10,8 @@ export async function GET() {
       mountRows,
       accessoriesRows,
       softwareRows,
-      locationRows
+      locationRows,
+      filterRows,
     ] = await Promise.all([
       sql`SELECT DISTINCT optics FROM pictures WHERE optics IS NOT NULL AND optics != '' ORDER BY optics ASC`,
       sql`SELECT DISTINCT camera FROM pictures WHERE camera IS NOT NULL AND camera != '' ORDER BY camera ASC`,
@@ -18,7 +19,26 @@ export async function GET() {
       sql`SELECT DISTINCT accessories FROM pictures WHERE accessories IS NOT NULL AND accessories != '' ORDER BY accessories ASC`,
       sql`SELECT DISTINCT processing_software FROM pictures WHERE processing_software IS NOT NULL AND processing_software != '' ORDER BY processing_software ASC`,
       sql`SELECT DISTINCT location FROM pictures WHERE location IS NOT NULL AND location != '' ORDER BY location ASC`,
+      sql`SELECT DISTINCT elem->>'filter' AS filter FROM pictures, jsonb_array_elements(capture_data) AS elem WHERE elem->>'filter' IS NOT NULL AND elem ->>'filter' != '' ORDER BY filter ASC`
     ]);
+
+    const defaultFilters = [
+      "Luminance (L)",
+      "Red (R)",
+      "Green (G)",
+      "Blue (B)",
+      "H-Alpha (Ha)",
+      "OIII",
+      "SII",
+      "Dual Band",
+      "Tri Band",
+      "CLS",
+      "UV/IR Cut",
+      "Sans filtre (Clear)",
+      "Solaire Solarix Explore Scientific",
+    ];
+    const dbFilters = filterRows.map((r: any) => r.filter);
+    const mergedFilters = Array.from(new Set([...dbFilters, ...defaultFilters])).sort();
 
     return NextResponse.json({
       optics: opticsRows.map((r: any) => r.optics),
@@ -27,6 +47,7 @@ export async function GET() {
       accessories: accessoriesRows.map((r: any) => r.accessories),
       processing_softwares: softwareRows.map((r: any) => r.processing_software),
       location: locationRows.map((r: any) => r.location),
+      filters: mergedFilters,
     });
   } catch (error) {
     console.error("Erreur récupération suggestions:", error);
