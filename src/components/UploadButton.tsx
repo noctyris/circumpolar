@@ -77,7 +77,10 @@ export default function UploadButton({
                 widget.minimize();
             }}
             signatureEndpoint="/api/sign-cloudinary-params"
-            onSuccess={handler}
+            onSuccess={(result, { widget }) => {
+                handler(result);
+                widget.close();
+            }}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-800 hover:bg-slate-700 border border-dashed border-slate-600 rounded-lg text-sm text-slate-200 transition"
         >
             <Upload className="w-4 h-4 text-cyan-400" />
