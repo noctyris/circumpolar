@@ -138,7 +138,7 @@ export default function UploadPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">PublicID Cloudinary (annoté)</label>
-                            <input required type="text" value={annotatedPublicId} onChange={(e) => setAnnotatedPublicId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <input type="text" value={annotatedPublicId} onChange={(e) => setAnnotatedPublicId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
                         </div>
                     </div>
                 </section>
