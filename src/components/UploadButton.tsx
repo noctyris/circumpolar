@@ -53,7 +53,28 @@ export default function UploadButton({
             options={{
                 multiple: false,
                 sources: ["local"],
-                clientAllowedFormats: ["webp", "png", "jpg", "jpeg"]
+                clientAllowedFormats: ["webp", "png", "jpg", "jpeg"],
+                showPoweredBy: false,
+                styles: {
+                    palette: {
+                        window: "#0f172a",
+                        sourceBg: "#020617",
+                        windowBorder: "#1e293b",
+                        tabIcon: "#0891b2",
+                        inactiveTabIcon: "#64748b",
+                        menuIcons: "#94a3b8",
+                        link: "#06b6d4",
+                        action: "#0891b2",
+                        inProgress: "#0284c7",
+                        complete: "#10b981",
+                        error: "#ef4444",
+                        textDark: "#000000",
+                        textLight: "#f8fafc"
+                    }
+                }
+            }}
+            onUploadAdded={(_, { widget }) => {
+                widget.minimize();
             }}
             signatureEndpoint="/api/sign-cloudinary-params"
             onSuccess={handler}
