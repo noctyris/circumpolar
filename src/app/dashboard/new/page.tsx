@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
+import UploadButton from '@/components/UploadButton';
 
 interface CaptureRow {
     filter:     string;
@@ -59,8 +60,17 @@ export default function UploadPage() {
 
     const removeCaptureRow = (index: number) => {
         setCaptureRows(captureRows.filter((_, i) => i !== index));
+    }
+    const handleMainUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
+        if (result?.info && typeof result.info === "object" && "public_id" in result.info) {
+            setPublicId(result.info.public_id);
+        }
     };
-
+    const handleAnnotatedUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
+        if (result?.info && typeof result.info === "object" && "public_id" in result.info) {
+            setAnnotatedPublicId(result.info.public_id);
+        }
+    };
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -133,12 +143,17 @@ export default function UploadPage() {
                             <input required type="date" value={captureDate} onChange={(e) => setCaptureDate(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">PublicID Cloudinary<RequiredField /></label>
-                            <input required type="text" value={publicId} onChange={(e) => setPublicId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <label className="block text-sm font-medium mb-1">Image<RequiredField /></label>
+                            <UploadButton resource={publicId} setResource={setPublicId} handler={handleMainUploadSuccess} label="Uploader l'image principale" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">PublicID Cloudinary (annoté)</label>
-                            <input type="text" value={annotatedPublicId} onChange={(e) => setAnnotatedPublicId(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
+                            <UploadButton
+                                resource={annotatedPublicId}
+                                setResource={setAnnotatedPublicId}
+                                handler={handleAnnotatedUploadSuccess}
+                                label="Uploader la version annotée"
+                            />
                         </div>
                     </div>
                 </section>
