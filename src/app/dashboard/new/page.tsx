@@ -1,5 +1,6 @@
 "use client";
 
+import { CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
