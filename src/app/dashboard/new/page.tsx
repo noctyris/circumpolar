@@ -77,7 +77,7 @@ export default function UploadPage() {
             mount,
             accessories: accessories || null,
             focal_length: focalLength !== "" ? Number(focalLength) : null,
-            f_number: fNumber !== "" ? Number(focalLength) : null,
+            f_number: fNumber !== "" ? Number(fNumber) : null,
             capture_data: captureRows.filter(r => r.filter && (Number(r.count !== "" ? r.count : 0) > 0)),
             processing_softwares: processingSoftwares || null,
             ra: ra !== "" ? Number(ra) : null,
@@ -86,7 +86,7 @@ export default function UploadPage() {
             location: location || null
         }
         try {
-            const res = await fetch("/api/pictures", {
+            const res = await fetch("/api/add-picture", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -179,7 +179,7 @@ export default function UploadPage() {
                             <div className="flex gap-2 items-center" key={index}>
                                 <input type="text" placeholder="Filtre / Type" value={row.filter} onChange={(e) => updateCaptureRow(index, "filter", e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
                                 <input type="number" placeholder="Nombre" value={row.count || ""} onChange={(e) => updateCaptureRow(index, "count", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
-                                <input type="number" placeholder="Temps d'exposition (s)" value={row.exposure || ""} onChange={(e) => updateCaptureRow(index, "exposure", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
+                                <input type="number" placeholder="Temps d'exposition (s)" value={row.exposure} onChange={(e) => updateCaptureRow(index, "exposure", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
                                 <button type="button" onClick={() => removeCaptureRow(index)} className="px-3 py-2 bg-red-500/2 text-red-400 hover:bg-red-500/30 rounded">×</button>
                             </div>
                         ))}
