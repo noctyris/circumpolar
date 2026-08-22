@@ -29,7 +29,7 @@ export default function LoginPage() {
                     </div>
                     <input type="hidden" name="redirectTo" value={callbackUrl} />
                     <div>
-                        <button type="submit" aria-disabled={isPending} className="flex w-full justify-center rounded-md bg-white/50 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-white/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">Connexion</button>
+                        <button type="submit" aria-disabled={isPending} className="flex w-full justify-center rounded-md bg-cyan-600 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-cyan-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">Connexion</button>
                     </div>
                     <div aria-live="polite" aria-atomic="true">
                         {errorMessage && (

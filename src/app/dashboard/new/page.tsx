@@ -211,7 +211,7 @@ export default function UploadPage() {
                         </div>
                     </div>
                 </section>
-                <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-cyan-600 hover:bg-cyan-600 disabled:opacity-50 text-white font-medium rounded-lg transition">{loading ? "Enregistrement..." : <><Send />Publier</>}</button>
+                <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-medium rounded-lg transition">{loading ? "Enregistrement..." : <><Send />Publier</>}</button>
             </form>
         </div>
     )
