@@ -1,11 +1,10 @@
 import type { MetadataRoute } from 'next'
-import { fetchPictures } from '@/lib/data' // Adapte selon le nom réel de ta fonction dans lib/data.ts
+import { fetchImages } from './lib/data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://circumpolar.vercel.app'
+  const baseUrl = 'https://circumpolar.dpdns.org'
 
-  // Récupération de toutes les photos publiques
-  const pictures = await fetchPictures()
+  const pictures = await fetchImages()
 
   const pictureEntries: MetadataRoute.Sitemap = pictures.map((picture) => ({
     url: `${baseUrl}/image/${picture.id}`,

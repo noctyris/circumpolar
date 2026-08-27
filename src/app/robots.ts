@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard/', '/api/', '/login'],
     },
-    sitemap: 'https://circumpolar.vercel.app/sitemap.xml',
+    sitemap: 'https://circumpolar.dpdns.org/sitemap.xml',
   }
 }
