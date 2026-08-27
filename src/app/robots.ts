@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/dashboard/',
+      disallow: ['/dashboard/', '/api/', '/login'],
     },
     sitemap: 'https://circumpolar.vercel.app/sitemap.xml',
   }
