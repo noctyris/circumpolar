@@ -1,4 +1,5 @@
 import AdminAccessButton from '@/components/AdminAccessButton';
+import Footer from "@/components/Footer"
 import { Syncopate, Sora, Geist } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import type { Metadata } from "next";
@@ -47,6 +48,7 @@ export default async function RootLayout({
                     <main className="max-w-7xl mx-auto p-4">
                         {children}
                     </main>
+                    <Footer />
                 </SessionProvider>
             </body>
         </html>
