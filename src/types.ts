@@ -6,14 +6,14 @@ export interface filter_t {
 
 export interface Picture {
   id:                   number;
-  title:                string;
+  title?:               string;
   target:               string;
   publicid:             string;
   annotated_publicid?:  string;
   capture_date:         string;
   optics:               string;
   camera:               string;
-  mount:                string;
+  mount?:               string;
   accessories?:         string;
   focal_length?:        number;
   f_number?:            number;

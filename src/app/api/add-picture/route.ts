@@ -35,8 +35,7 @@ export async function POST(req: NextRequest) {
       !publicID ||
       !capture_date ||
       !optics ||
-      !camera ||
-      !mount
+      !camera
     ) {
       return NextResponse.json(
         { error: "Veuillez renseigner tous les champs obligatoires." },

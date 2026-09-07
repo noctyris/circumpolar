@@ -1,10 +1,14 @@
-import Link from "next/link"
+import Link from "next/link";
+import { fetchImages } from "../lib/data";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+    const images = await fetchImages();
+
     return (
         <>
-            {/*  TODO: NEW SECTION INCOMING  */}
-            <code className="text-white/60 italic tracking-wider">Nothing here yet... except this button</code>
+            <div>
+                {images.length} images
+            </div>
 
             <div className="sticky bottom-6 self-end pointer-events-none z-30 mt-auto">
                 <Link
@@ -15,5 +19,5 @@ export default function DashboardPage() {
                 </Link>
             </div>
         </>
-    )
+    );
 }
