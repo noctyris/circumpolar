@@ -45,7 +45,7 @@ export default async function RootLayout({
                         <h1 className="font-title text-3xl md:text-5xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-4">Circumpolar</h1>
                         <AdminAccessButton isAuth={!!session} />
                     </header>
-                    <main className="max-w-7xl mx-auto p-4 flex-1">
+                    <main className="max-w-7xl mx-auto p-4 flex-1 w-full">
                         {children}
                     </main>
                     <Footer />
