@@ -4,7 +4,7 @@ export default function DashboardPage() {
     return (
         <>
             {/*  TODO: NEW SECTION INCOMING  */}
-            <code className="text-white/60 italic h-500 block tracking-wider">Nothing here yet... except this button</code>
+            <code className="text-white/60 italic tracking-wider">Nothing here yet... except this button</code>
 
             <div className="sticky bottom-6 self-end pointer-events-none z-30 mt-auto">
                 <Link
