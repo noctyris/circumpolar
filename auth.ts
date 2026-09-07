@@ -23,7 +23,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { password } = parsed.data;
         const user = await getUser("admin");
-        console.log(user, password, typeof user.password, JSON.stringify(user.password))
         if (!user) return null;
 
         const valid = await bcrypt.compare(password, user.password.trim());
