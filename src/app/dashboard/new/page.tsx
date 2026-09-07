@@ -4,7 +4,7 @@ import { CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
-import UploadButton from '@/components/UploadButton';
+import UploadButton from '@/components/dashboard/UploadButton';
 
 interface CaptureRow {
     filter:     string;

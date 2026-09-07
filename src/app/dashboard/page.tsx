@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { fetchImages } from "../lib/data";
+import Grid from "@/components/dashboard/Grid";
 
 export default async function DashboardPage() {
     const images = await fetchImages();
 
     return (
         <>
-            <div>
-                {images.length} images
-            </div>
-
+            <Grid images={images} />
             <div className="sticky bottom-6 self-end pointer-events-none z-30 mt-auto">
                 <Link
                     href="dashboard/new"
