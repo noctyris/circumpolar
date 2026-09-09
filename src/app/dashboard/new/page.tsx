@@ -5,6 +5,7 @@ import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
 import UploadButton from '@/components/dashboard/UploadButton';
+import RequiredField from "@/components/dashboard/RequiredField";
 
 interface CaptureRow {
     filter:     string;
@@ -12,9 +13,6 @@ interface CaptureRow {
     exposure:   number | "";
 }
 
-function RequiredField() {
-    return <span className="text-red-500">{" *"}</span>
-}
 
 export default function UploadPage() {
     const router = useRouter();

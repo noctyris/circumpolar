@@ -2,6 +2,7 @@
  
 import { signIn } from '@root/auth';
 import { AuthError } from 'next-auth';
+import { fetchSingleImage } from './data';
  
 export async function authenticate(
     prevState: string | undefined,
@@ -25,4 +26,9 @@ export async function authenticate(
         }
         throw error;
     }
+}
+
+export async function getImageAction(id: string) {
+    const imageInList = await fetchSingleImage(id)
+    return imageInList[0];
 }
