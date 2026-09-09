@@ -15,11 +15,14 @@ export default function Image({ image }: { image: Picture }) {
 
                 <div className="absolute inset-x-0 bottom-0 z-20 p-4 translate-y-4 transition-all duration-500 ease-out group-hover:translate-y-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                     <div className="flex justify-between">
-                        <div className="space-y-1">
-                            <p className="font-subtitle text-xs font-light tracking-[0.2em] text-white">{image.title || image.target}</p>
-                            {image.title && <p className="font-subtitle text-xs font-light tracking-[0.2em] text-white/50">{image.target}</p>}
+                        <div className="space-y-1 flex flex-col w-full">
+                            <span className="font-subtitle text-xs font-light tracking-[0.2em] text-white">{image.title || image.target}</span>
+                            <div className="flex justify-between items-center">
+                                {image.title && <span className="font-subtitle text-xs font-light text-white/50 group-hover:text-white duration-500">{image.target}</span>}
+                                <span className="font-subtitle text-xs font-light text-white/50 group-hover:text-white duration-500">{new Intl.DateTimeFormat('fr-FR').format(new Date(image.capture_date))}</span>
+                            </div>
                         </div>
-                        <div className="bg-black rounded-l-full p-2 pr-7 duration-500 border-5 border-white/30 translate-x-25 group-hover:translate-x-7">
+                        <div className="bg-black rounded-l-full p-2 pr-7 duration-500 translate-x-25 group-hover:translate-x-7">
                             <SquarePen />
                         </div>
                     </div>
