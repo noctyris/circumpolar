@@ -1,24 +1,12 @@
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@root/auth";
+import { buildParamsToSign } from "@/app/lib/cloudinary-signature";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
   api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
-
-// Seuls ces paramètres peuvent être signés : signer le reste (transformations
-// `eager`, `invalidate`, `public_id`…) permettrait de piloter le compte
-// Cloudinary à volonté.
-const ALLOWED_KEYS = ["timestamp", "source", "folder"] as const;
-
-function safeFolder(folder: unknown): string | null {
-  if (typeof folder !== "string") return null;
-  const trimmed = folder.trim();
-  // Dossier relatif simple : pas de `..`, pas de chemin absolu.
-  if (!/^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*$/.test(trimmed)) return null;
-  return trimmed;
-}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -33,49 +21,24 @@ export async function POST(request: Request) {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
 
-  const raw = (body as { paramsToSign?: unknown } | null)?.paramsToSign;
-  if (!raw || typeof raw !== "object") {
-    return Response.json({ error: "Bad request" }, { status: 400 });
-  }
-
-  const unsigned = raw as Record<string, unknown>;
-  const unknownKeys = Object.keys(unsigned).filter(
-    (key) => !(ALLOWED_KEYS as readonly string[]).includes(key),
+  const result = buildParamsToSign(
+    (body as { paramsToSign?: unknown } | null)?.paramsToSign,
   );
-  if (unknownKeys.length > 0) {
+
+  if (!result.ok) {
+    // `received` permet de diagnostiquer ce que le widget envoie réellement
+    // quand Cloudinary change ses paramètres.
     console.error(
-      `Signature Cloudinary refusée pour les paramètres : ${unknownKeys.join(", ")}`,
+      `Signature Cloudinary refusée (${result.error}) — reçu : ${result.received.join(", ") || "aucun"}`,
     );
     return Response.json(
-      { error: `Paramètres non autorisés : ${unknownKeys.join(", ")}` },
+      { error: result.error, received: result.received },
       { status: 400 },
     );
   }
 
-  const timestamp = Number(unsigned.timestamp);
-  if (!Number.isInteger(timestamp) || timestamp <= 0) {
-    return Response.json({ error: "Bad request" }, { status: 400 });
-  }
-
-  const paramsToSign: Record<string, string | number> = { timestamp };
-
-  if (unsigned.source !== undefined) {
-    if (typeof unsigned.source !== "string" || unsigned.source.length > 32) {
-      return Response.json({ error: "Bad request" }, { status: 400 });
-    }
-    paramsToSign.source = unsigned.source;
-  }
-
-  if (unsigned.folder !== undefined) {
-    const folder = safeFolder(unsigned.folder);
-    if (!folder) {
-      return Response.json({ error: "Bad request" }, { status: 400 });
-    }
-    paramsToSign.folder = folder;
-  }
-
   const signature = cloudinary.utils.api_sign_request(
-    paramsToSign,
+    result.params,
     process.env.CLOUDINARY_API_SECRET!,
   );
 
