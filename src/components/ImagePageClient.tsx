@@ -16,6 +16,7 @@ export default function ImagePageClient({ image }: { image: Picture }) {
         <div className="flex-1 bg-white/5 rounded-2xl aspect-square flex items-center justify-center">
           <ProtectedImage
             src={image.publicid}
+            alt={`${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}`}
             width="" 
             classname="w-full h-auto block duration-500"
           />

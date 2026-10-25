@@ -30,6 +30,7 @@ export default function ImageModalClient({ image }: { image: Picture }) {
             <div className="absolute inset-0 flex items-center justify-center text-white/10 font-mono italic">
               <ProtectedImage
                 src={image.publicid}
+                alt={`${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}`}
                 width="" 
                 classname="w-full h-auto block duration-500"
               />

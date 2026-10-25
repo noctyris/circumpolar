@@ -8,6 +8,7 @@ export default function AstroImage({ image }: { image: Picture }) {
       <div className="cursor-zoom-in w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 group relative">
         <ProtectedImage
           src={image.publicid}
+          alt={`${image.title || image.target} — ${image.target_category}`}
           width="400" 
           classname="w-full h-auto block duration-500 group-hover:scale-105 group-hover:opacity-50"
         />

@@ -2,7 +2,13 @@
 import { getCldImageUrl } from "next-cloudinary";
 import { useEffect, useRef } from "react";
 
-export default function ProtectedImage({src, width, height, classname}: {src: string, width?: string, height?: string, classname: string}) {
+/**
+ * Affichage d'une image sur un <canvas> : dissuasion visuelle uniquement
+ * (clic droit, glisser-déposer). Ce n'est pas un contrôle d'accès — l'URL
+ * Cloudinary reste dérivable et l'image est de toute façon téléchargée par le
+ * navigateur.
+ */
+export default function ProtectedImage({src, alt, width, height, classname}: {src: string, alt?: string, width?: string, height?: string, classname: string}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const url = getCldImageUrl({
@@ -34,10 +40,15 @@ export default function ProtectedImage({src, width, height, classname}: {src: st
     <div className="relative group cursor-zoom-in">
       <canvas 
         ref={canvasRef} 
+        role="img"
+        aria-label={alt}
         onContextMenu={(e) => e.preventDefault()} 
         className={`${classname} h-auto`} 
         style={{ userSelect: 'none', touchAction: 'none' }} 
       />
+      <noscript>
+        <img src={url} alt={alt ?? ""} className={`${classname} h-auto`} draggable={false} />
+      </noscript>
       <div 
         className="absolute inset-0 z-10" 
         onContextMenu={(e) => e.preventDefault()} 
@@ -46,4 +57,3 @@ export default function ProtectedImage({src, width, height, classname}: {src: st
     </div>
   );
 }
-
