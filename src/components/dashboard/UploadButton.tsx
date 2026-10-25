@@ -1,6 +1,6 @@
 import { CldUploadButton, CloudinaryUploadWidgetResults } from 'next-cloudinary';
 import { CheckCircle2, Upload, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 
 export default function UploadButton({
     resource,
@@ -13,11 +13,13 @@ export default function UploadButton({
     handler: (result: CloudinaryUploadWidgetResults) => void;
     label?: string;
 }) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    // Détection d'hydratation sans setState dans un effet (rendu serveur =
+    // false, rendu client = true).
+    const mounted = useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false,
+    );
 
     if (resource) {
         return (

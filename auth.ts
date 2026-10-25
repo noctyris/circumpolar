@@ -1,6 +1,5 @@
 // auth.ts
 import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
 import sql from "@/app/lib/data";
 import bcrypt from "bcryptjs";
@@ -12,7 +11,12 @@ async function getUser(username: string) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...authConfig,
+  pages: {
+    signIn: "/login",
+  },
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -25,6 +29,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await getUser("admin");
         if (!user) return null;
 
+        // Le hash en base peut avoir été saisi avec des espaces : le trim()
+        // évite un échec de connexion silencieux.
         const valid = await bcrypt.compare(password, user.password.trim());
         if (!valid) return null;
 

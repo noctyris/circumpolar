@@ -78,7 +78,7 @@ export default function UploadPage() {
         setCaptureRows([...captureRows, {filter: "", count: "", exposure: ""}])
     };
 
-    const updateCaptureRow = (index: number, field: keyof CaptureRow, value: any) => {
+    const updateCaptureRow = (index: number, field: keyof CaptureRow, value: CaptureRow[keyof CaptureRow]) => {
         const updated = [...captureRows];
         updated[index] = { ...updated[index], [field]: value };
         setCaptureRows(updated);
@@ -129,8 +129,8 @@ export default function UploadPage() {
             });
             if (!res.ok) throw new Error("Erreur lors de l'enregistrement");
             router.push("/dashboard");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement");
         } finally {
             setLoading(false);
         }
@@ -229,7 +229,7 @@ export default function UploadPage() {
                     </div>
                 </section>
                 <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Données d'acquisition & Traitement</h2>
+                    <h2 className="text-lg font-semibold text-slate-200">Données d&apos;acquisition & Traitement</h2>
                     <div className="space-y-2">
                         <label className="block text-sm font-medium">Poses<RequiredField /></label>
                         {captureRows.map((row, index) => (
