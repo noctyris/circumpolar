@@ -2,6 +2,10 @@ import { CldUploadButton, CloudinaryUploadWidgetResults } from 'next-cloudinary'
 import { CheckCircle2, Upload, X } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
+const MAX_UPLOAD_BYTES = Number(
+    process.env.NEXT_PUBLIC_CLOUDINARY_MAX_UPLOAD_BYTES ?? 10_000_000
+);
+
 export default function UploadButton({
     resource,
     setResource,
@@ -56,6 +60,9 @@ export default function UploadButton({
                 multiple: false,
                 sources: ["local"],
                 clientAllowedFormats: ["webp", "png", "jpg", "jpeg"],
+                // Limite du plan Cloudinary : le fichier est refusé par le
+                // widget au lieu d'échouer après envoi.
+                maxFileSize: MAX_UPLOAD_BYTES,
                 showPoweredBy: false,
                 styles: {
                     palette: {
