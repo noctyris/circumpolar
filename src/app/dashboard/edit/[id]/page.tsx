@@ -4,7 +4,7 @@ import { getImageAction } from "@/app/lib/actions";
 import { filter_t, Picture } from "@/types";
 import RequiredField from "@/components/dashboard/RequiredField";
 import { FormEvent, useEffect, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 import UploadButton from "@/components/dashboard/UploadButton";
 import { CloudinaryUploadWidgetResults } from "next-cloudinary";
 import { useRouter } from "next/navigation";
@@ -84,8 +84,26 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
             });
             if (!res.ok) throw new Error("Erreur lors de la mise à jour");
             router.push("/dashboard");
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erreur lors de la mise à jour");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleDelete() {
+        if (!image) return;
+        if (!window.confirm("Supprimer définitivement cette image ? Cette action est irréversible.")) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const res = await fetch(`/api/pictures/${image.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Erreur lors de la suppression");
+            router.push("/dashboard");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Erreur lors de la suppression");
         } finally {
             setLoading(false);
         }
@@ -120,6 +138,8 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
    return (
         <div className="max-w-4xl mx-auto px-4">
             <h1 className="text-2xl font-bold mb-6">Modifier la capture</h1>
+
+            {error && <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded mb-6">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
@@ -208,7 +228,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                     </div>
                 </section>
                 <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Données d'acquisition & Traitement</h2>
+                    <h2 className="text-lg font-semibold text-slate-200">Données d&apos;acquisition & Traitement</h2>
                     <div className="space-y-2">
                         <label className="block text-sm font-medium">Poses<RequiredField /></label>
                         {image?.capture_data.map((row, index) => (
@@ -263,6 +283,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                     </div>
                 </section>
                 <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-medium rounded-lg transition">{loading ? "Enregistrement..." : <><Send />Publier</>}</button>
+                <button type="button" onClick={handleDelete} disabled={loading} className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-transparent border border-red-500/40 text-red-400 hover:bg-red-500/20 disabled:opacity-50 font-medium rounded-lg transition"><Trash2 className="w-4 h-4" />Supprimer cette image</button>
             </form>
         </div>
     )
