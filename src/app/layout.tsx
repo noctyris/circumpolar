@@ -22,9 +22,30 @@ const geist = Geist({
     variable: '--font-geist',
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://circumpolar.dpdns.org";
+const siteDescription =
+    "Portfolio d'astrophotographie : ciel profond, lunaire, solaire et planétaire. Détails d'acquisition, matériel et traitement de chaque image.";
+
 export const metadata: Metadata = {
-    title: "Circumpolar",
-    description: "",
+    metadataBase: new URL(siteUrl),
+    title: {
+        default: "Circumpolar",
+        template: "%s — Circumpolar",
+    },
+    description: siteDescription,
+    openGraph: {
+        type: "website",
+        siteName: "Circumpolar",
+        locale: "fr_FR",
+        url: siteUrl,
+        title: "Circumpolar",
+        description: siteDescription,
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Circumpolar",
+        description: siteDescription,
+    },
 };
 
 export default async function RootLayout({
