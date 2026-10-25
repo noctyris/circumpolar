@@ -1,8 +1,14 @@
 // app/api/pictures/suggestions/route.ts
 import { NextResponse } from "next/server";
+import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const [
       opticsRows,
@@ -37,18 +43,24 @@ export async function GET() {
       "Sans filtre (Clear)",
       "Solaire Solarix Explore Scientific",
     ];
-    const dbFilters = filterRows.map((r: any) => r.filter);
+    const dbFilters = filterRows.flatMap((row) =>
+      typeof row.filter === "string" ? [row.filter] : []
+    );
     const mergedFilters = Array.from(new Set([...dbFilters, ...defaultFilters])).sort();
 
-    return NextResponse.json({
-      optics: opticsRows.map((r: any) => r.optics),
-      camera: cameraRows.map((r: any) => r.camera),
-      mount: mountRows.map((r: any) => r.mount),
-      accessories: accessoriesRows.map((r: any) => r.accessories),
-      processing_softwares: softwareRows.map((r: any) => r.processing_software),
-      location: locationRows.map((r: any) => r.location),
-      filters: mergedFilters,
-    });
+    return NextResponse.json(
+      {
+        optics: opticsRows.map((r) => r.optics),
+        camera: cameraRows.map((r) => r.camera),
+        mount: mountRows.map((r) => r.mount),
+        accessories: accessoriesRows.map((r) => r.accessories),
+        processing_softwares: softwareRows.map((r) => r.processing_software),
+        location: locationRows.map((r) => r.location),
+        filters: mergedFilters,
+      },
+      // Données réservées au dashboard : jamais de cache partagé.
+      { headers: { "Cache-Control": "private, max-age=60" } }
+    );
   } catch (error) {
     console.error("Erreur récupération suggestions:", error);
     return NextResponse.json({ error: "Failed to fetch suggestions" }, { status: 500 });

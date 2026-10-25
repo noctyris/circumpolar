@@ -1,8 +1,14 @@
 // app/api/add-picture/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
 
 export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const data = await req.json();
 
