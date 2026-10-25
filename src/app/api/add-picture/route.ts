@@ -79,7 +79,9 @@ export async function POST(req: NextRequest) {
         ${capture_date},
         ${optics},
         ${camera},
-        ${mount},
+        // Colonne NOT NULL : une monture absente (photo au téléphone, par
+        // exemple) doit être stockée comme chaîne vide, jamais comme NULL.
+        ${mount || ""},
         ${accessories || null},
         ${focal_length !== null && focal_length !== undefined ? focal_length : null},
         ${f_number !== null && f_number !== undefined ? f_number : null},
