@@ -79,7 +79,7 @@ export default function ImageModalClient({ image }: { image: Picture }) {
                    <li>{image.optics}</li>
                    <li>{image.camera}</li>
                    <li>{image.accessories}</li>
-                   <li>{image.mount}</li>
+                   {image.mount && <li>{image.mount}</li>}
                  </ul>
               </section>
            </div>

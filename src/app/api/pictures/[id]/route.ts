@@ -82,7 +82,7 @@ export async function PUT(
         capture_date = ${capture_date},
         optics = ${optics},
         camera = ${camera},
-        mount = ${mount || ""},
+        mount = ${mount || null},
         accessories = ${accessories || null},
         focal_length = ${focal_length !== null && focal_length !== undefined ? focal_length : null},
         f_number = ${f_number !== null && f_number !== undefined ? f_number : null},
