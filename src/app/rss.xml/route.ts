@@ -13,11 +13,25 @@ function thumbnailUrl(publicId: string): string {
   })
 }
 
+// Un HEAD par image à chaque génération du flux représentait 48+ appels
+// sortants par requête. Les tailles ne changent pas : on les garde 24 h.
+const SIZE_TTL_MS = 24 * 60 * 60 * 1000
+const sizeCache = new Map<string, { length: number; expires: number }>()
+
 async function fetchByteLength(url: string): Promise<number> {
+  const cached = sizeCache.get(url)
+  if (cached && cached.expires > Date.now()) {
+    return cached.length
+  }
+
   try {
     const res = await fetch(url, { method: 'HEAD' })
     const len = res.headers.get('content-length')
-    return len ? parseInt(len, 10) : 0
+    const length = len ? parseInt(len, 10) : 0
+    if (Number.isFinite(length) && length > 0) {
+      sizeCache.set(url, { length, expires: Date.now() + SIZE_TTL_MS })
+    }
+    return length
   } catch {
     return 0
   }
