@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { ArrowUpRight, X } from "lucide-react";
-import ProtectedImage from "./ProtectedImage";
+import ImageViewer from "./ImageViewer";
 import ImageDetails from "./ImageDetails";
 import { Picture } from "@/types";
 
@@ -34,14 +34,9 @@ export default function ImageModalClient({ image }: { image: Picture }) {
       className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden border-none bg-black/60 p-0 text-white outline-none backdrop-blur-md"
     >
       <div className="flex h-full w-full flex-col md:flex-row">
-        <div className="relative flex h-[50dvh] shrink-0 items-center justify-center p-4 md:h-full md:flex-1 md:p-10">
-          <div className="max-h-full max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 shadow-2xl">
-            <ProtectedImage
-              src={image.publicid}
-              alt={`${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}`}
-              width="1600"
-              classname="max-h-[42dvh] w-auto max-w-full object-contain md:max-h-[78vh]"
-            />
+        <div className="relative flex h-[48dvh] shrink-0 items-center justify-center overflow-hidden p-4 md:h-full md:flex-1 md:p-10">
+          <div className="w-full">
+            <ImageViewer image={image} classname="max-h-[30dvh] md:max-h-[72vh]" />
           </div>
 
           <button
