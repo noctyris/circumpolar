@@ -1,7 +1,7 @@
 "use client";
 
 import Masonry from 'react-masonry-css';
-import Image from "@/components/dashboard/Image"
+import PictureCard from "@/components/dashboard/Image"
 import { Picture } from '@/types';
 
 const breakpointColumnsObj = {
@@ -20,7 +20,7 @@ export default function Grid({ images }: { images: Picture[] }) {
     >
       {images.map((img) => (
         <div key={img.id} className="mb-4">
-          <Image image={img} />
+          <PictureCard image={img} />
         </div>
       ))}
     </Masonry>

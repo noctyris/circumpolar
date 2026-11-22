@@ -29,7 +29,7 @@ export default function SiteNav() {
             } items-center rounded-full px-2.5 py-2 font-subtitle text-[10px] uppercase tracking-widest transition ${
               active
                 ? "bg-indigo-500/15 text-indigo-100 shadow-[inset_0_0_0_1px_rgba(129,140,248,0.25)]"
-                : "text-white/45 hover:bg-white/5 hover:text-white"
+                : "text-white/65 hover:bg-white/5 hover:text-white"
             }`}
           >
             <span

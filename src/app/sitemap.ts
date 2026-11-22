@@ -1,31 +1,35 @@
-import type { MetadataRoute } from 'next'
-import { fetchImages } from './lib/data'
+import type { MetadataRoute } from "next";
+import { fetchImages } from "./lib/data";
+import { absoluteUrl, siteUrl } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://circumpolar.dpdns.org'
+  const pictures = await fetchImages();
 
-  const pictures = await fetchImages()
-
-  const pictureEntries: MetadataRoute.Sitemap = pictures.map((picture) => ({
-    url: `${baseUrl}/image/${picture.id}`,
-    lastModified: picture.upload_date ? new Date(picture.upload_date) : new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  }))
+  const pictureEntries: MetadataRoute.Sitemap = pictures.map((picture) => {
+    const date = picture.upload_date ? new Date(picture.upload_date) : new Date();
+    return {
+      url: absoluteUrl(`/image/${picture.id}`),
+      lastModified: Number.isNaN(date.getTime()) ? new Date() : date,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    };
+  });
 
   return [
     {
-      url: baseUrl,
+      url: siteUrl,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1.0,
+      changeFrequency: "weekly",
+      priority: 1,
     },
     {
-      url: `${baseUrl}/about`,
+      url: absoluteUrl("/about"),
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.5,
     },
     ...pictureEntries,
-  ]
+  ];
 }

@@ -13,14 +13,21 @@ const categoryStyles: Record<string, string> = {
 
 const defaultCategoryStyle = "border-white/15 bg-black/40 text-white/75";
 
-export default function AstroImage({ image }: { image: Picture }) {
+export default function AstroImage({
+  image,
+  priority = false,
+}: {
+  image: Picture;
+  priority?: boolean;
+}) {
   return (
     <Link href={`/image/${image.id}`} scroll={false}>
-      <div className="group relative w-full cursor-zoom-in overflow-hidden rounded-xl border border-white/10 bg-white/5 transition duration-500 group-hover:border-indigo-300/25 group-hover:shadow-[0_22px_60px_-36px_rgba(99,102,241,0.9)]">
+      <div className="group relative w-full cursor-zoom-in overflow-hidden rounded-xl border border-white/10 bg-white/5 transition duration-500 group-hover:border-indigo-300/25 group-hover:shadow-[0_22px_60px_-36px_rgba(99,102,241,0.9)] group-focus-visible:border-indigo-300/50 group-focus-visible:shadow-[0_22px_60px_-36px_rgba(99,102,241,0.9)]">
         <ProtectedImage
           src={image.publicid}
           alt={`${image.title || image.target} — ${image.target_category}`}
-          width="400"
+          width="800"
+          priority={priority}
           classname="w-full h-auto block duration-500 group-hover:scale-105 group-hover:opacity-50"
         />
 
@@ -32,7 +39,7 @@ export default function AstroImage({ image }: { image: Picture }) {
           {image.target_category}
         </span>
 
-        <div className="absolute inset-x-0 bottom-0 z-20 translate-y-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-100 transition-all duration-500 ease-out lg:translate-y-4 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 z-20 translate-y-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-100 transition-all duration-500 ease-out lg:translate-y-4 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 lg:group-focus-visible:translate-y-0 lg:group-focus-visible:opacity-100">
           <span className="font-subtitle text-xs font-light uppercase tracking-[0.2em] text-white">
             {image.title || image.target}
           </span>
@@ -40,7 +47,7 @@ export default function AstroImage({ image }: { image: Picture }) {
           <div className="mt-2 h-[1px] w-full bg-gradient-to-r from-indigo-400 via-cyan-300 to-fuchsia-300 transition-all delay-100 duration-700 lg:w-0 lg:group-hover:w-full" />
         </div>
 
-        <div className="absolute inset-0 z-30" onContextMenu={(e) => e.preventDefault()} />
+        <div className="absolute inset-0 z-30" onContextMenu={(event) => event.preventDefault()} />
       </div>
     </Link>
   );

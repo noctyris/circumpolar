@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "À propos",
   description:
     "Noctyris, photos du ciel depuis le Morbihan. Ciel profond, Lune, Soleil, planétaire, et les infos derrière chaque image.",
+  alternates: { canonical: "/about" },
   openGraph: {
     type: "profile",
     title: "À propos — Noctyris",
@@ -36,7 +37,7 @@ export default function AboutPage() {
       <div className="flex items-center py-2">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/50 transition hover:border-white/20 hover:text-white"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/65 transition hover:border-white/20 hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Galerie
@@ -69,21 +70,21 @@ export default function AboutPage() {
             viser la Lune, le Soleil ou les planètes.
           </p>
 
-          <p className="max-w-2xl font-body text-sm leading-relaxed text-white/45 sm:text-base">
+          <p className="max-w-2xl font-body text-sm leading-relaxed text-white/60 sm:text-base">
             Ici, je range les images avec les infos de la nuit. Le ciel est pas trop mauvais par ici,
             Bortle 4 environ, donc y a déjà de quoi faire.
           </p>
 
           <div className="flex flex-wrap gap-2 pt-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/50">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/65">
               <Telescope className="h-3.5 w-3.5" />
               Newton 150/750
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/50">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/65">
               <MapPin className="h-3.5 w-3.5" />
               Morbihan
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/50">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-white/65">
               <Camera className="h-3.5 w-3.5" />
               Ciel profond & planétaire
             </span>
@@ -94,7 +95,7 @@ export default function AboutPage() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
         <div className="space-y-10">
           <section className="space-y-4">
-            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">
+            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">
               Pourquoi ce site
             </h2>
             <div className="space-y-4 font-body text-sm leading-relaxed text-white/60 sm:text-base">
@@ -111,7 +112,7 @@ export default function AboutPage() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">
+            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">
               Comment je travaille
             </h2>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -134,14 +135,14 @@ export default function AboutPage() {
                     0{index + 1}
                   </span>
                   <h3 className="mt-2 font-subtitle text-xs uppercase tracking-widest text-white/80">{step.title}</h3>
-                  <p className="mt-2 font-body text-sm leading-relaxed text-white/50">{step.text}</p>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-white/65">{step.text}</p>
                 </div>
               ))}
             </div>
           </section>
 
           <section className="space-y-4">
-            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">
+            <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">
               Les logiciels
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -156,7 +157,7 @@ export default function AboutPage() {
 
         <aside className="space-y-6 lg:sticky lg:top-6">
           <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-            <h2 className="font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">Le matériel</h2>
+            <h2 className="font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">Le matériel</h2>
             <dl className="mt-4 space-y-4">
               {gear.map((item) => (
                 <div key={item.label} className="space-y-1">
@@ -168,7 +169,7 @@ export default function AboutPage() {
           </section>
 
           <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-            <h2 className="font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">Me retrouver</h2>
+            <h2 className="font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">Me retrouver</h2>
             <ul className="mt-3 divide-y divide-white/5">
               {socials.map((social) => (
                 <li key={social.label}>
@@ -176,7 +177,7 @@ export default function AboutPage() {
                     href={social.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between gap-3 py-2.5 font-body text-sm text-white/60 transition hover:text-white"
+                    className="flex items-center justify-between gap-3 py-2.5 font-body text-sm text-white/70 transition hover:text-white"
                   >
                     {social.label}
                     <ArrowUpRight className="h-4 w-4" />
@@ -188,7 +189,7 @@ export default function AboutPage() {
               href="https://github.com/noctyris/circumpolar"
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-white/35 transition hover:text-white"
+              className="mt-4 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-white/70 transition hover:text-white"
             >
               Voir le code du site
               <ArrowUpRight className="h-3 w-3" />

@@ -13,6 +13,12 @@ import ListField from "@/components/dashboard/ListField";
 
 type TabId = "general" | "equipment" | "acquisition" | "location";
 
+function toDateInput(value?: string | null): string {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+}
+
 const isTabId = (value: string | undefined): value is TabId =>
     value === "general" || value === "equipment" || value === "acquisition" || value === "location";
 
@@ -123,7 +129,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
             accessories: image.accessories ?? null,
             focal_length: typeof image.focal_length === "number" ? image.focal_length : null,
             f_number: typeof image.f_number === "number" ? image.f_number : null,
-            capture_data: image.capture_data
+            capture_data: (image.capture_data ?? [])
                 .filter((row) => row.filter && Number(row.count) > 0)
                 .map((row) => ({
                     filter: row.filter.trim(),
@@ -202,7 +208,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
     if (loadError) {
         return (
             <div className="mx-auto max-w-4xl px-4">
-                <div className="rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
+                <div role="alert" className="rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
                     {loadError}
                 </div>
             </div>
@@ -233,7 +239,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
             </header>
 
             {error && (
-                <div className="mb-6 rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
+                <div role="alert" className="mb-6 rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
                     {error}
                 </div>
             )}
@@ -250,10 +256,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-title" className="mb-1 block text-sm font-medium">
                                             Titre de la photo
                                         </label>
                                         <input
+                                            id="edit-title"
                                             type="text"
                                             value={image.title ?? ""}
                                             onChange={(e) => updateImageProp("title", e.target.value)}
@@ -261,10 +268,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-target" className="mb-1 block text-sm font-medium">
                                             Nom technique<RequiredField />
                                         </label>
                                         <input
+                                            id="edit-target"
                                             required
                                             type="text"
                                             value={image.target}
@@ -273,10 +281,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-category" className="mb-1 block text-sm font-medium">
                                             Catégorie<RequiredField />
                                         </label>
                                         <select
+                                            id="edit-category"
                                             required
                                             value={image.target_category}
                                             onChange={(e) =>
@@ -288,21 +297,19 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                             <option value="Lunaire">Lunaire</option>
                                             <option value="Solaire">Solaire</option>
                                             <option value="Planétaire">Planétaire</option>
+                                            <option value="Système solaire">Système solaire</option>
                                             <option value="Open Field">Open Field</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-date" className="mb-1 block text-sm font-medium">
                                             Date de capture<RequiredField />
                                         </label>
                                         <input
+                                            id="edit-date"
                                             required
                                             type="date"
-                                            value={
-                                                image.capture_date
-                                                    ? new Date(image.capture_date).toISOString().slice(0, 10)
-                                                    : ""
-                                            }
+                                            value={toDateInput(image.capture_date)}
                                             onChange={(e) =>
                                                 updateImageProp("capture_date", e.target.value)
                                             }
@@ -310,9 +317,9 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <div id="edit-annotated-label" className="mb-1 block text-sm font-medium">
                                             PublicID Cloudinary (annoté)
-                                        </label>
+                                        </div>
                                         <UploadButton
                                             resource={image.annotated_publicid || ""}
                                             setResource={(value: string) =>
@@ -332,10 +339,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-optics" className="mb-1 block text-sm font-medium">
                                             Optique / Télescope<RequiredField />
                                         </label>
                                         <input
+                                            id="edit-optics"
                                             required
                                             type="text"
                                             list="optics-list"
@@ -350,10 +358,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-camera" className="mb-1 block text-sm font-medium">
                                             Caméra / Capteur<RequiredField />
                                         </label>
                                         <input
+                                            id="edit-camera"
                                             required
                                             type="text"
                                             list="camera-list"
@@ -368,8 +377,9 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Monture</label>
+                                        <label htmlFor="edit-mount" className="mb-1 block text-sm font-medium">Monture</label>
                                         <input
+                                            id="edit-mount"
                                             type="text"
                                             list="mount-list"
                                             value={image.mount ?? ""}
@@ -383,8 +393,9 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Focale (mm)</label>
+                                        <label htmlFor="edit-focal" className="mb-1 block text-sm font-medium">Focale (mm)</label>
                                         <input
+                                            id="edit-focal"
                                             type="number"
                                             value={image.focal_length ?? ""}
                                             onChange={(e) =>
@@ -397,8 +408,9 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Rapport F/D</label>
+                                        <label htmlFor="edit-fnumber" className="mb-1 block text-sm font-medium">Rapport F/D</label>
                                         <input
+                                            id="edit-fnumber"
                                             type="number"
                                             value={image.f_number ?? ""}
                                             onChange={(e) =>
@@ -432,7 +444,7 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         <p className="block text-sm font-medium">
                                             Poses<RequiredField />
                                         </p>
-                                        {image.capture_data.map((row, index) => (
+                                        {(image.capture_data ?? []).map((row, index) => (
                                             <div
                                                 key={index}
                                                 className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,1fr))_auto]"
@@ -509,8 +521,9 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                                     <div className="md:col-span-2">
-                                        <label className="mb-1 block text-sm font-medium">Lieu</label>
+                                        <label htmlFor="edit-location" className="mb-1 block text-sm font-medium">Lieu</label>
                                         <input
+                                            id="edit-location"
                                             type="text"
                                             list="location-list"
                                             value={image.location ?? ""}
@@ -524,10 +537,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-bortle" className="mb-1 block text-sm font-medium">
                                             Classe Bortle
                                         </label>
                                         <input
+                                            id="edit-bortle"
                                             type="number"
                                             min={1}
                                             max={9}
@@ -543,10 +557,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-ra" className="mb-1 block text-sm font-medium">
                                             Ascension droite (°)
                                         </label>
                                         <input
+                                            id="edit-ra"
                                             type="number"
                                             min={0}
                                             max={360}
@@ -562,10 +577,11 @@ export default function ImagePage({ params }: { params: Promise<{ id: string }> 
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="edit-dec" className="mb-1 block text-sm font-medium">
                                             Déclinaison (°)
                                         </label>
                                         <input
+                                            id="edit-dec"
                                             type="number"
                                             min={-90}
                                             max={90}

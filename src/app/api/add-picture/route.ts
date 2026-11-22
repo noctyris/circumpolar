@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
 import { prepareListForDb } from "@/app/lib/list-columns";
+import { readPictureRequest } from "@/app/lib/picture-request";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -11,52 +12,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const data = await req.json();
-
-    const {
-      title,
-      target,
-      target_category,
-      publicID,
-      annotatedPublicID,
-      capture_date,
-      optics,
-      camera,
-      mount,
-      accessories,
-      focal_length,
-      f_number,
-      capture_data,
-      processing_software,
-      processing_softwares,
-      ra,
-      dec,
-      bortle_class,
-      location,
-    } = data;
-
-    const accessoryList = await prepareListForDb(accessories, "accessories");
-    const softwareList = await prepareListForDb(
-      processing_software ?? processing_softwares,
-      "processing_software"
-    );
-    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
-    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
-
-    // Validation des champs NOT NULL requis par la base
-    if (
-      !target ||
-      !target_category ||
-      !publicID ||
-      !capture_date ||
-      !optics ||
-      !camera
-    ) {
+    const payload = await readPictureRequest(req);
+    if (!payload.ok) {
       return NextResponse.json(
-        { error: "Veuillez renseigner tous les champs obligatoires." },
-        { status: 400 }
+        { error: payload.error, issues: payload.issues },
+        { status: payload.status }
       );
     }
+
+    const data = payload.data;
+    const accessoryList = await prepareListForDb(data.accessories, "accessories");
+    const softwareList = await prepareListForDb(data.processing_software, "processing_software");
+    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
+    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
 
     await sql`
       INSERT INTO pictures (
@@ -80,24 +48,24 @@ export async function POST(req: NextRequest) {
         location
       )
       VALUES (
-        ${title || null},
-        ${target},
-        ${target_category},
-        ${publicID},
-        ${annotatedPublicID || null},
-        ${capture_date},
-        ${optics},
-        ${camera},
-        ${mount || null},
+        ${data.title},
+        ${data.target},
+        ${data.target_category},
+        ${data.publicID},
+        ${data.annotatedPublicID},
+        ${data.capture_date},
+        ${data.optics},
+        ${data.camera},
+        ${data.mount},
         ${accessoryParam},
-        ${focal_length !== null && focal_length !== undefined ? focal_length : null},
-        ${f_number !== null && f_number !== undefined ? f_number : null},
-        ${sql.json(capture_data && capture_data.length > 0 ? capture_data : [])},
+        ${data.focal_length ?? null},
+        ${data.f_number ?? null},
+        ${sql.json(data.capture_data)},
         ${softwareParam},
-        ${ra !== null && ra !== undefined ? ra : null},
-        ${dec !== null && dec !== undefined ? dec : null},
-        ${bortle_class !== null && bortle_class !== undefined ? bortle_class : null},
-        ${location || null}
+        ${data.ra ?? null},
+        ${data.dec ?? null},
+        ${data.bortle_class ?? null},
+        ${data.location}
       )
     `;
 

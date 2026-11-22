@@ -11,8 +11,12 @@
   --font-body: var(--font-geist), sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
-  background-color: #0a0a0a !important;
+  background-color: #0a0a0a;
   color: #ededed;
   color-scheme: dark;
   margin: 0;
@@ -22,6 +26,7 @@ html, body {
 }
 
 body {
+  overflow-x: hidden;
   background-image:
     radial-gradient(56rem 36rem at 50% -14%, rgba(99, 102, 241, 0.16), transparent 72%),
     radial-gradient(42rem 28rem at 105% 6%, rgba(34, 211, 238, 0.08), transparent 70%),
@@ -29,3 +34,27 @@ body {
   background-repeat: no-repeat;
 }
 
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 3px;
+}
+
+::selection {
+  background-color: rgba(129, 140, 248, 0.35);
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

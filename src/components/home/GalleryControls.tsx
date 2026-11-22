@@ -67,7 +67,7 @@ export default function GalleryControls({
       : `${sortLabel} · ${groupLabel}`;
 
   return (
-    <div aria-busy={pending} className="space-y-2">
+    <div aria-busy={pending} className="sticky top-2 z-30 space-y-2">
       <button
         type="button"
         onClick={() => setFiltersOpen((open) => !open)}
@@ -83,7 +83,7 @@ export default function GalleryControls({
         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">
           Filtres
         </span>
-        <span className="ml-auto min-w-0 truncate font-body text-xs text-white/35">
+        <span className="ml-auto min-w-0 truncate font-body text-xs text-white/60">
           {summary}
         </span>
         <ChevronDown
@@ -107,7 +107,7 @@ export default function GalleryControls({
           ) : (
             <SlidersHorizontal className="h-3.5 w-3.5 text-indigo-300" aria-hidden="true" />
           )}
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-white/45 sm:inline">
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-white/60 sm:inline">
             Affiner
           </span>
         </span>
@@ -158,7 +158,7 @@ export default function GalleryControls({
               className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 font-body text-[11px] transition ${
                 order === "desc"
                   ? "bg-cyan-400/15 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                  : "text-white/40 hover:bg-white/[0.04] hover:text-white/80"
+                  : "text-white/55 hover:bg-white/[0.04] hover:text-white/80"
               }`}
             >
               <ArrowDownWideNarrow className="h-3.5 w-3.5" aria-hidden="true" />
@@ -173,7 +173,7 @@ export default function GalleryControls({
               className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 font-body text-[11px] transition ${
                 order === "asc"
                   ? "bg-cyan-400/15 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                  : "text-white/40 hover:bg-white/[0.04] hover:text-white/80"
+                  : "text-white/55 hover:bg-white/[0.04] hover:text-white/80"
               }`}
             >
               <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />

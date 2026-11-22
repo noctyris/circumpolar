@@ -1,126 +1,107 @@
 # 🌌 Circumpolar
 
-> Portfolio web dédié à l'astrophotographie personnelle du ciel profond et du système solaire.
+Portfolio d'astrophotographie personnel : ciel profond, Lune, Soleil et
+planétaire, avec les détails d'acquisition et de traitement de chaque image.
 
-🌐 **Site en ligne** : [circumpolar.dpdns.org](https://circumpolar.dpdns.org)
+🌐 **Site** : [circumpolar.dpdns.org](https://circumpolar.dpdns.org)
 
 ---
 
 ## ✨ Fonctionnalités
 
-- **Galerie interactive** : Affichage des captures astronomiques
-- **Détails techniques complets** : Métadonnées d'acquisition par cible (optique, capteur, monture, temps d'intégration, filtres, logiciel de traitement)
-- **Navigation fluide** : Affichage dynamique sous forme de modales avec interception de routes Next.js
+- Galerie filtrable et groupable, avec ouverture des images en modale.
+- Fiches techniques : matériel, poses, filtres, logiciels, coordonnées et
+  classe de Bortle.
+- Versions annotées quand elles existent.
+- Administration protégée : ajout, modification et suppression d'images,
+  uploads Cloudinary signés.
+- Flux RSS, sitemap, robots et métadonnées Open Graph.
 
----
+## 🛠️ Stack
 
-## 🛠️ Stack Technique
+- **Next.js 16** (App Router, Server Components), React 19, TypeScript.
+- **Tailwind CSS 4**.
+- **PostgreSQL** pour les métadonnées et le rate limit de connexion.
+- **Auth.js v5** (credentials + JWT).
+- **Cloudinary** pour le stockage et les transformations d'images.
+- **Vitest** pour les tests unitaires.
 
-- **Framework** : [Next.js](https://nextjs.org/) (App Router, Server & Client Components)
-- **Langage** : TypeScript
-- **Styles** : [Tailwind CSS](https://tailwindcss.com/)
-- **Hébergement & CDN Médias** : [Cloudinary](https://cloudinary.com/) (stockage optimisé, transformations dynamiques)
-- **Base de données** : PostgreSQL (stockage des métadonnées d'acquisition)
-- **Authentification** : [NextAuth.js v5 / Auth.js](https://authjs.dev/) (credentials + JWT session)
+## 📋 Prérequis
 
----
+- **Node.js 20.9 ou plus récent** (le projet est testé avec Node 22 ; `.nvmrc`
+  est fourni).
+- PostgreSQL.
+- Un compte Cloudinary.
 
-## 🚀 Démarrage rapide
-
-### Prérequis
-
-- Node.js (v18+)
-- `pnpm`, `npm` ou `yarn`
-- Une base de données PostgreSQL
-- Un compte Cloudinary
-
-### 1. Cloner le dépôt
+## 🚀 Installation
 
 ```bash
-git clone https://github.com/noctyris/circumpolar.git
-cd circumpolar
+npm ci
+cp .env.example .env.local
 ```
 
-### 2. Installer les dépendances
+Renseigner `.env.local`, puis préparer la base :
 
 ```bash
-npm install
-# ou
-pnpm install
+psql "$POSTGRES_URL" -f db/schema.sql
 ```
 
-### 3. Configurer les variables d'environnement
+Pour une base existante, lire [`db/README.md`](db/README.md) avant toute
+migration. La migration `001_picture_lists_to_jsonb.sql` ne concerne que les
+anciennes colonnes texte ; ne pas la rejouer sur une base neuve.
 
-Crée un fichier `.env.local` à la racine :
-
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/circumpolar
-
-# NextAuth
-AUTH_SECRET=ton_secret_genere_via_openssl
-
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=ton_cloud_name
-NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=circumpolar
-CLOUDINARY_API_KEY=ta_cle_api
-CLOUDINARY_API_SECRET=ton_secret_api
-```
-
-### 4. Lancer le serveur de développement
+Lancer ensuite :
 
 ```bash
 npm run dev
-# ou
-pnpm dev
 ```
 
-Ouvre [http://localhost:3000](http://localhost:3000) dans ton navigateur.
+Le site est disponible sur [http://localhost:3000](http://localhost:3000).
 
----
+## 🔐 Variables d'environnement
 
-## 📸 Structure des Données
+Le modèle complet est dans [`.env.example`](.env.example).
 
-Chaque capture répertorie les caractéristiques d'acquisition essentielles :
-- **Cible** : Désignation astronomique (Messier, NGC, IC) & catégorie
-- **Matériel** : Tube/optique, caméra, monture, accessoires
-- **Exposition** : Temps de pose unitaire, nombre de brutes, filtres, temps total d'intégration
--# 🌌 Circumpolar
+- `POSTGRES_URL` (ou `DATABASE_URL` en compatibilité) : connexion PostgreSQL.
+- `POSTGRES_SSL=false` : utile pour un PostgreSQL local sans TLS.
+- `AUTH_SECRET` : secret de signature des sessions. Générer avec
+  `openssl rand -base64 32`. `NEXTAUTH_SECRET` reste accepté pour compatibilité.
+- `NEXT_PUBLIC_SITE_URL` : URL publique utilisée par le sitemap, le RSS et les
+  métadonnées.
+- `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` et
+  `NEXT_PUBLIC_CLOUDINARY_API_KEY` : configuration publique Cloudinary.
+- `CLOUDINARY_API_KEY` et `CLOUDINARY_API_SECRET` : configuration serveur
+  Cloudinary. Le secret ne doit jamais être préfixé par `NEXT_PUBLIC_`.
+- `NEXT_PUBLIC_CLOUDINARY_MAX_UPLOAD_BYTES` : limite côté widget.
 
-> Galerie et carnet de bord d'astrophotographie personnelle.
+## 🗄️ Base de données
 
-Circumpolar est un espace dédié à l'observation du ciel nocturne. La plateforme rassemble des clichés astronomiques (nébuleuses, galaxies, amas stellaires, planètes) accompagnés de leurs fiches d'observation complètes.
+- `db/schema.sql` : schéma de départ pour une installation neuve.
+- `db/migrations/001_picture_lists_to_jsonb.sql` : conversion historique des
+  listes texte en JSONB.
+- `db/migrations/002_login_attempts.sql` : table du rate limit partagé.
 
----
+La table `login_attempts` est utilisée par le limiteur de connexion. Le code
+retombe sur un compteur mémoire si elle n'est pas encore présente.
 
-## ✨ Ce que vous trouverez sur le site
+## 🧪 Scripts
 
-* **Galerie d'astrophotographie** : Consultation des images en haute définition réparties par cibles (ciel profond, planétaire, etc.).
-* **Fiches techniques détaillées** : Pour chaque image, accès aux conditions de prise de vue réelles :
-  * Matériel utilisé (télescope, caméra, monture, filtres).
-  * Données d'acquisition (temps de pose unitaire, nombre de poses, temps d'intégration total).
-  * Date, lieu et qualité du ciel (indice Bortle).
-* **Versions annotées** : Mise en évidence des objets célestes identifiés sur le champ photographié quand l'astrométrie est disponible.
+```bash
+npm run dev        # serveur de développement
+npm run build      # build de production
+npm start          # serveur de production
+npm run lint       # ESLint
+npm run typecheck  # TypeScript sans émission
+npm test           # tests Vitest
+npm run check      # typecheck + lint + tests
+```
 
----
+## 🖼️ Images et droits
 
-## 🔭 Le Matériel Principal
+Sauf mention contraire, toutes les photographies présentes sur ce dépôt et sur
+le site sont la propriété exclusive de leur auteur. Merci de ne pas les
+réutiliser ou les redistribuer sans autorisation préalable.
 
-Les photographies présentées sont principalement capturées avec :
-* **Optique** : Télescope Perl Bellatrix Newton 150/750
-* **Monture** : SynScan EQ3 motorisée
-* **Caméras** : Caméras dédiées à l'astronomie (ex. ZWO ASI)
-
----
-
-## 🌐 Découvrir les images
-
-Le site est accessible en ligne à l'adresse suivante :  
-👉 **[circumpolar.dpdns.org](https://circumpolar.dpdns.org)**
-
----
-
-## 📄 Licence et Droits d'auteur
-
-Sauf mention contraire, toutes les photographies présentes sur ce dépôt et sur le site sont la propriété exclusive de leur auteur. Merci de ne pas les réutiliser ou les redistribuer sans autorisation préalable.
- **Conditions** : Date de capture, coordonnées (RA/Dec), classe Bortle
+Le blocage du clic droit et l'overlay de la galerie sont une dissuasion
+visuelle, pas un contrôle d'accès : une image affichée dans un navigateur reste
+techniquement téléchargeable.

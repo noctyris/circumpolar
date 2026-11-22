@@ -61,7 +61,9 @@ async function DashboardContent({ showIncomplete }: { showIncomplete: boolean })
       <div className="pointer-events-none sticky bottom-6 z-30 mt-auto self-end">
         <Link
           href="/dashboard/new"
-          className="pointer-events-auto -mr-7 flex h-12 w-12 items-center justify-center rounded-full bg-white/50 text-4xl shadow-lg duration-300 hover:bg-white/70 hover:text-6xl"
+          aria-label="Ajouter une nouvelle capture"
+          title="Ajouter une nouvelle capture"
+          className="pointer-events-auto -mr-7 flex h-12 w-12 items-center justify-center rounded-full bg-white/80 text-4xl text-black shadow-lg transition hover:bg-white"
         >
           +
         </Link>

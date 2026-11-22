@@ -202,7 +202,7 @@ export default function UploadPage() {
             </header>
 
             {error && (
-                <div className="mb-6 rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
+                <div role="alert" className="mb-6 rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
                     {error}
                 </div>
             )}
@@ -217,10 +217,11 @@ export default function UploadPage() {
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-title" className="mb-1 block text-sm font-medium">
                                             Titre de la photo
                                         </label>
                                         <input
+                                            id="photo-title"
                                             type="text"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
@@ -228,10 +229,11 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-target" className="mb-1 block text-sm font-medium">
                                             Nom technique<RequiredField />
                                         </label>
                                         <input
+                                            id="photo-target"
                                             required
                                             type="text"
                                             value={target}
@@ -240,10 +242,11 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-category" className="mb-1 block text-sm font-medium">
                                             Catégorie<RequiredField />
                                         </label>
                                         <select
+                                            id="photo-category"
                                             required
                                             value={targetCategory}
                                             onChange={(e) => setTargetCategory(e.target.value)}
@@ -256,14 +259,16 @@ export default function UploadPage() {
                                             <option value="Lunaire">Lunaire</option>
                                             <option value="Solaire">Solaire</option>
                                             <option value="Planétaire">Planétaire</option>
+                                            <option value="Système solaire">Système solaire</option>
                                             <option value="Open Field">Open Field</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-date" className="mb-1 block text-sm font-medium">
                                             Date de capture<RequiredField />
                                         </label>
                                         <input
+                                            id="photo-date"
                                             required
                                             type="date"
                                             value={captureDate}
@@ -272,9 +277,9 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <div id="photo-image-label" className="mb-1 block text-sm font-medium">
                                             Image<RequiredField />
-                                        </label>
+                                        </div>
                                         <UploadButton
                                             resource={publicId}
                                             setResource={setPublicId}
@@ -283,9 +288,9 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <div id="photo-annotated-label" className="mb-1 block text-sm font-medium">
                                             PublicID Cloudinary (annoté)
-                                        </label>
+                                        </div>
                                         <UploadButton
                                             resource={annotatedPublicId}
                                             setResource={setAnnotatedPublicId}
@@ -301,10 +306,11 @@ export default function UploadPage() {
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-optics" className="mb-1 block text-sm font-medium">
                                             Optique / Télescope<RequiredField />
                                         </label>
                                         <input
+                                            id="photo-optics"
                                             required
                                             type="text"
                                             list="optics-list"
@@ -319,10 +325,11 @@ export default function UploadPage() {
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-camera" className="mb-1 block text-sm font-medium">
                                             Caméra / Capteur<RequiredField />
                                         </label>
                                         <input
+                                            id="photo-camera"
                                             required
                                             type="text"
                                             list="camera-list"
@@ -337,8 +344,9 @@ export default function UploadPage() {
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Monture</label>
+                                        <label htmlFor="photo-mount" className="mb-1 block text-sm font-medium">Monture</label>
                                         <input
+                                            id="photo-mount"
                                             type="text"
                                             list="mount-list"
                                             value={mount}
@@ -352,8 +360,9 @@ export default function UploadPage() {
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Focale (mm)</label>
+                                        <label htmlFor="photo-focal" className="mb-1 block text-sm font-medium">Focale (mm)</label>
                                         <input
+                                            id="photo-focal"
                                             type="number"
                                             value={focalLength}
                                             onChange={(e) =>
@@ -363,8 +372,9 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">Rapport F/D</label>
+                                        <label htmlFor="photo-fnumber" className="mb-1 block text-sm font-medium">Rapport F/D</label>
                                         <input
+                                            id="photo-fnumber"
                                             type="number"
                                             value={fNumber}
                                             onChange={(e) =>
@@ -468,8 +478,9 @@ export default function UploadPage() {
                             content: (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                                     <div className="md:col-span-2">
-                                        <label className="mb-1 block text-sm font-medium">Lieu</label>
+                                        <label htmlFor="photo-location" className="mb-1 block text-sm font-medium">Lieu</label>
                                         <input
+                                            id="photo-location"
                                             type="text"
                                             list="location-list"
                                             value={location}
@@ -483,10 +494,11 @@ export default function UploadPage() {
                                         </datalist>
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-bortle" className="mb-1 block text-sm font-medium">
                                             Classe Bortle
                                         </label>
                                         <input
+                                            id="photo-bortle"
                                             type="number"
                                             min={1}
                                             max={9}
@@ -499,10 +511,11 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-ra" className="mb-1 block text-sm font-medium">
                                             Ascension droite (°)
                                         </label>
                                         <input
+                                            id="photo-ra"
                                             type="number"
                                             min={0}
                                             max={360}
@@ -515,10 +528,11 @@ export default function UploadPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="mb-1 block text-sm font-medium">
+                                        <label htmlFor="photo-dec" className="mb-1 block text-sm font-medium">
                                             Déclinaison (°)
                                         </label>
                                         <input
+                                            id="photo-dec"
                                             type="number"
                                             min={-90}
                                             max={90}

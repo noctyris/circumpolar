@@ -259,6 +259,7 @@ export default function ImageViewer({
             src={src}
             alt={alt}
             width="1600"
+            loading="eager"
             wrapperClassname="absolute inset-0"
             classname="object-contain"
             fill
@@ -269,12 +270,12 @@ export default function ImageViewer({
           {!previewReady && (
             <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/[0.02]">
               {previewFailed ? (
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/60">
                   Image indisponible
                 </p>
               ) : (
                 <>
-                  <LoaderCircle className="h-6 w-6 animate-spin text-white/40" aria-hidden="true" />
+                  <LoaderCircle className="h-6 w-6 animate-spin text-white/55" aria-hidden="true" />
                   <span className="sr-only" role="status">
                     Chargement de l’image…
                   </span>
@@ -306,7 +307,7 @@ export default function ImageViewer({
                 type="button"
                 onClick={() => setAnnotated(false)}
                 aria-pressed={!annotated}
-                className={`rounded-full px-3 py-1.5 font-subtitle text-[10px] uppercase tracking-widest transition ${annotated ? "text-white/50 hover:text-white" : "bg-white text-black"}`}
+                className={`rounded-full px-3 py-1.5 font-subtitle text-[10px] uppercase tracking-widest transition ${annotated ? "text-white/65 hover:text-white" : "bg-white text-black"}`}
               >
                 Image
               </button>
@@ -314,7 +315,7 @@ export default function ImageViewer({
                 type="button"
                 onClick={() => setAnnotated(true)}
                 aria-pressed={annotated}
-                className={`rounded-full px-3 py-1.5 font-subtitle text-[10px] uppercase tracking-widest transition ${annotated ? "bg-white text-black" : "text-white/50 hover:text-white"}`}
+                className={`rounded-full px-3 py-1.5 font-subtitle text-[10px] uppercase tracking-widest transition ${annotated ? "bg-white text-black" : "text-white/65 hover:text-white"}`}
               >
                 Annotée
               </button>
@@ -323,7 +324,7 @@ export default function ImageViewer({
             <span />
           )}
 
-          <span className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-white/60">
             <span className="sm:hidden">Toucher pour agrandir</span>
             <span className="hidden sm:inline">Cliquer pour agrandir</span>
           </span>
@@ -352,7 +353,7 @@ export default function ImageViewer({
                 <p className="truncate font-subtitle text-xs uppercase tracking-[0.2em] text-white/70">
                   {title}
                 </p>
-                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/40">
+                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/55">
                   {annotated ? "Version annotée" : image.target}
                 </p>
               </div>
@@ -392,6 +393,7 @@ export default function ImageViewer({
                   src={src}
                   alt={alt}
                   width={ZOOM_WIDTH}
+                  loading="eager"
                   classname="max-h-[calc(100dvh-9rem)] w-auto max-w-[92vw] object-contain"
                   onLoad={handleZoomLoad}
                   onError={handleZoomError}
@@ -401,12 +403,12 @@ export default function ImageViewer({
               {!zoomReady && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   {zoomFailed ? (
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-white/60">
                       Image indisponible
                     </p>
                   ) : (
                     <>
-                      <LoaderCircle className="h-7 w-7 animate-spin text-white/40" aria-hidden="true" />
+                      <LoaderCircle className="h-7 w-7 animate-spin text-white/55" aria-hidden="true" />
                       <span className="sr-only" role="status">
                         Chargement du zoom…
                       </span>
@@ -450,7 +452,7 @@ export default function ImageViewer({
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
-              <span className="hidden font-mono text-[10px] uppercase tracking-widest text-white/30 sm:block">
+              <span className="hidden font-mono text-[10px] uppercase tracking-widest text-white/55 sm:block">
                 Molette · pincement · double-clic · glisser
               </span>
             </div>

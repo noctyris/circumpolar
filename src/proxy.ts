@@ -18,7 +18,7 @@ function isSecureRequest(req: NextRequest): boolean {
 }
 
 export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
 
   // Les routes d'authentification doivent rester publiques, sinon plus de login.
   if (pathname.startsWith("/api/auth")) {
@@ -27,7 +27,8 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({
     req,
-    secret: process.env.NEXTAUTH_SECRET,
+    // Auth.js v5 utilise AUTH_SECRET, mais accepte encore NEXTAUTH_SECRET.
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
     secureCookie: isSecureRequest(req),
   });
   const isAuth = Boolean(token && token.id);
@@ -43,7 +44,7 @@ export async function proxy(req: NextRequest) {
   }
 
   const loginUrl = new URL("/login", req.url);
-  loginUrl.searchParams.set("callbackUrl", pathname);
+  loginUrl.searchParams.set("callbackUrl", `${pathname}${search}`);
   return NextResponse.redirect(loginUrl);
 }
 

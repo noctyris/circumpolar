@@ -6,8 +6,13 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 async function getUser(username: string) {
-  const user = await sql`SELECT * FROM users WHERE username=${username}`;
-  return user[0];
+  const [user] = await sql`
+    SELECT id, username, email, password
+    FROM users
+    WHERE username = ${username}
+    LIMIT 1
+  `;
+  return user;
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -21,20 +26,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         const parsed = z
-          .object({ password: z.string().min(6) })
+          .object({ password: z.string().min(6).max(200) })
           .safeParse(credentials);
         if (!parsed.success) return null;
 
-        const { password } = parsed.data;
         const user = await getUser("admin");
-        if (!user) return null;
+        if (!user || typeof user.password !== "string") return null;
 
-        // Le hash en base peut avoir été saisi avec des espaces : le trim()
-        // évite un échec de connexion silencieux.
+        const password = parsed.data.password;
         const valid = await bcrypt.compare(password, user.password.trim());
         if (!valid) return null;
 
-        return user;
+        return {
+          id: String(user.id),
+          name: user.username,
+          email: user.email ?? null,
+        };
       },
     }),
   ],
@@ -42,14 +49,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.name = (user as { username: string }).username;
-        token.email = user.email;
+        token.name = user.name ?? "";
+        token.email = user.email ?? "";
       }
       return token;
     },
     async session({ session, token }) {
-      const t = token as { id: string; name?: string; email?: string };
-      session.user.id = t.id;
+      const t = token as { id?: string; name?: string; email?: string };
+      session.user.id = t.id ?? "";
       session.user.name = t.name ?? "";
       session.user.email = t.email ?? "";
       return session;

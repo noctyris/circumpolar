@@ -10,7 +10,7 @@ export default function ImagePageClient({ image }: { image: Picture }) {
       <div className="flex items-center py-2">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/50 transition hover:border-white/20 hover:text-white"
+          className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/65 transition hover:border-white/20 hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Galerie

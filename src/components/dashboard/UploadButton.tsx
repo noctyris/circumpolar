@@ -37,6 +37,7 @@ export default function UploadButton({
                     onClick={() => setResource("")}
                     className="text-slate-400 hover:text-red-400 p-1"
                     title="Supprimer l'image"
+                    aria-label="Retirer l'image"
                 >
                     <X className="w-4 h-4" />
                 </button>

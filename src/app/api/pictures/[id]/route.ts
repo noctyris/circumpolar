@@ -4,11 +4,15 @@ import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
 import { prepareListForDb } from "@/app/lib/list-columns";
+import { readPictureRequest } from "@/app/lib/picture-request";
+
+const cloudinaryApiKey =
+  process.env.CLOUDINARY_API_KEY ?? process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET!,
+  api_key: cloudinaryApiKey,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 async function requireSession() {
@@ -34,79 +38,65 @@ export async function PUT(
     if (id === null) {
       return NextResponse.json({ error: "Identifiant invalide." }, { status: 400 });
     }
-    const data = await req.json();
 
-    const {
-      title,
-      target,
-      target_category,
-      publicID,
-      annotatedPublicID,
-      capture_date,
-      optics,
-      camera,
-      mount,
-      accessories,
-      focal_length,
-      f_number,
-      capture_data,
-      processing_software,
-      processing_softwares,
-      ra,
-      dec,
-      bortle_class,
-      location,
-    } = data;
-
-    const accessoryList = await prepareListForDb(accessories, "accessories");
-    const softwareList = await prepareListForDb(
-      processing_software ?? processing_softwares,
-      "processing_software"
-    );
-    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
-    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
-
-    // Même validation que pour la création
-    if (
-      !target ||
-      !target_category ||
-      !publicID ||
-      !capture_date ||
-      !optics ||
-      !camera
-    ) {
+    const payload = await readPictureRequest(req);
+    if (!payload.ok) {
       return NextResponse.json(
-        { error: "Veuillez renseigner tous les champs obligatoires." },
-        { status: 400 }
+        { error: payload.error, issues: payload.issues },
+        { status: payload.status }
       );
     }
 
+    const [existing] = await sql`
+      SELECT annotated_publicid FROM pictures WHERE id = ${id}
+    `;
+    if (!existing) {
+      return NextResponse.json({ error: "Image introuvable." }, { status: 404 });
+    }
+
+    const data = payload.data;
+    const accessoryList = await prepareListForDb(data.accessories, "accessories");
+    const softwareList = await prepareListForDb(data.processing_software, "processing_software");
+    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
+    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
+
     const result = await sql`
       UPDATE pictures SET
-        title = ${title || null},
-        target = ${target},
-        target_category = ${target_category},
-        publicid = ${publicID},
-        annotated_publicid = ${annotatedPublicID || null},
-        capture_date = ${capture_date},
-        optics = ${optics},
-        camera = ${camera},
-        mount = ${mount || null},
+        title = ${data.title},
+        target = ${data.target},
+        target_category = ${data.target_category},
+        publicid = ${data.publicID},
+        annotated_publicid = ${data.annotatedPublicID},
+        capture_date = ${data.capture_date},
+        optics = ${data.optics},
+        camera = ${data.camera},
+        mount = ${data.mount},
         accessories = ${accessoryParam},
-        focal_length = ${focal_length !== null && focal_length !== undefined ? focal_length : null},
-        f_number = ${f_number !== null && f_number !== undefined ? f_number : null},
-        capture_data = ${sql.json(capture_data && capture_data.length > 0 ? capture_data : [])},
+        focal_length = ${data.focal_length ?? null},
+        f_number = ${data.f_number ?? null},
+        capture_data = ${sql.json(data.capture_data)},
         processing_software = ${softwareParam},
-        ra = ${ra !== null && ra !== undefined ? ra : null},
-        dec = ${dec !== null && dec !== undefined ? dec : null},
-        bortle_class = ${bortle_class !== null && bortle_class !== undefined ? bortle_class : null},
-        location = ${location || null}
+        ra = ${data.ra ?? null},
+        dec = ${data.dec ?? null},
+        bortle_class = ${data.bortle_class ?? null},
+        location = ${data.location}
       WHERE id = ${id}
       RETURNING id
     `;
 
     if (result.length === 0) {
       return NextResponse.json({ error: "Image introuvable." }, { status: 404 });
+    }
+
+    const previousAnnotated = existing.annotated_publicid;
+    if (
+      typeof previousAnnotated === "string" &&
+      previousAnnotated &&
+      previousAnnotated !== data.annotatedPublicID
+    ) {
+      await cloudinary.uploader.destroy(previousAnnotated).catch((error: unknown) => {
+        console.error(`Échec de la suppression de l'ancienne version annotée (${previousAnnotated}):`, error);
+      });
     }
 
     return NextResponse.json({ success: true });

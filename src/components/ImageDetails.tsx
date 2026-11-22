@@ -10,7 +10,8 @@ const dateFormat = new Intl.DateTimeFormat("fr-FR", {
 
 function formatDate(value?: string | null) {
   if (!value) return null;
-  return dateFormat.format(new Date(value));
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : dateFormat.format(date);
 }
 
 function formatRa(ra: number) {
@@ -28,7 +29,13 @@ function formatDec(dec: number) {
 }
 
 function totalExposure(rows: filter_t[]) {
-  return rows.reduce((total, row) => total + row.exposure * row.count, 0);
+  return rows.reduce((total, row) => {
+    const exposure = Number(row.exposure);
+    const count = Number(row.count);
+    return Number.isFinite(exposure) && Number.isFinite(count)
+      ? total + exposure * count
+      : total;
+  }, 0);
 }
 
 function Detail({
@@ -44,7 +51,7 @@ function Detail({
 
   return (
     <div className="space-y-1">
-      <dt className="font-body text-[10px] uppercase tracking-widest text-white/45">{label}</dt>
+      <dt className="font-body text-[10px] uppercase tracking-widest text-white/60">{label}</dt>
       <dd className={`text-sm text-white/80 ${mono ? "font-mono" : "font-body"}`}>{value}</dd>
     </div>
   );
@@ -55,7 +62,7 @@ function ListDetail({ label, items }: { label: string; items?: string[] }) {
 
   return (
     <div className="space-y-2">
-      <dt className="font-body text-[10px] uppercase tracking-widest text-white/45">{label}</dt>
+      <dt className="font-body text-[10px] uppercase tracking-widest text-white/60">{label}</dt>
       <dd className="flex flex-wrap gap-2">
         {items.map((item) => (
           <span
@@ -83,7 +90,7 @@ function Section({
 
   return (
     <section className="space-y-4">
-      <Heading className="border-b border-white/5 pb-2 font-subtitle text-xs uppercase tracking-widest text-white/50">
+      <Heading className="border-b border-white/5 pb-2 font-subtitle text-xs uppercase tracking-widest text-white/65">
         {title}
       </Heading>
       {children}
@@ -100,7 +107,9 @@ export default function ImageDetails({
 }) {
   const Title = headingLevel;
   const sectionLevel = headingLevel === "h1" ? "h2" : "h3";
-  const captures = (image.capture_data ?? []).filter((row) => row.filter && row.count > 0);
+  const captures = (image.capture_data ?? []).filter(
+    (row) => row.filter && Number(row.count) > 0
+  );
   const integration = totalExposure(captures);
   const softwares = Array.from(new Set(image.processing_software ?? []));
   const captureDate = formatDate(image.capture_date);
@@ -115,7 +124,7 @@ export default function ImageDetails({
             {image.target_category}
           </span>
           {integration > 0 && (
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/55">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.15em] text-white/65">
               {formatDuration(integration)}
             </span>
           )}
@@ -124,9 +133,9 @@ export default function ImageDetails({
         <Title className="break-words bg-gradient-to-b from-white to-white/40 bg-clip-text font-title text-2xl uppercase leading-tight tracking-[0.05em] text-transparent sm:text-3xl">
           {image.title || image.target}
         </Title>
-        {image.title && <p className="font-mono text-sm text-white/55">{image.target}</p>}
+        {image.title && <p className="font-mono text-sm text-white/65">{image.target}</p>}
         {captureDate && (
-          <p className="font-subtitle text-[11px] uppercase tracking-widest text-white/50">
+          <p className="font-subtitle text-[11px] uppercase tracking-widest text-white/65">
             {captureDate}
           </p>
         )}
@@ -142,7 +151,7 @@ export default function ImageDetails({
                   className="flex items-baseline justify-between gap-4 border-b border-white/5 pb-2 last:border-0 last:pb-0"
                 >
                   <span className="font-body text-sm text-white/80">{row.filter}</span>
-                  <span className="font-mono text-xs text-white/55">
+                  <span className="font-mono text-xs text-white/65">
                     {row.count} × {formatDuration(row.exposure)}
                   </span>
                 </li>
@@ -195,7 +204,7 @@ export default function ImageDetails({
         </Section>
       )}
 
-      <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-4 font-mono text-[10px] uppercase tracking-widest text-white/40">
+      <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-white/5 pt-4 font-mono text-[10px] uppercase tracking-widest text-white/55">
         <span>Réf. #{image.id}</span>
         {uploadDate && <span>Publiée le {uploadDate}</span>}
       </footer>

@@ -1,7 +1,10 @@
 import { fetchImages } from '@/app/lib/data'
 import { getCldImageUrl } from 'next-cloudinary'
+import { absoluteUrl, siteUrl } from '@/lib/site'
 
-const baseUrl = 'https://circumpolar.dpdns.org'
+export const dynamic = 'force-dynamic'
+
+const baseUrl = siteUrl
 
 function thumbnailUrl(publicId: string): string {
   return getCldImageUrl({
@@ -25,7 +28,7 @@ async function fetchByteLength(url: string): Promise<number> {
   }
 
   try {
-    const res = await fetch(url, { method: 'HEAD' })
+    const res = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) })
     const len = res.headers.get('content-length')
     const length = len ? parseInt(len, 10) : 0
     if (Number.isFinite(length) && length > 0) {
@@ -59,7 +62,8 @@ export async function GET() {
       const url = `${baseUrl}/image/${picture.id}`
       const title = picture.title || picture.target || 'Sans titre'
       const dateSource = picture.upload_date ?? picture.capture_date
-      const pubDate = new Date(dateSource ?? Date.now()).toUTCString()
+      const parsedDate = new Date(dateSource ?? Date.now())
+      const pubDate = (Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate).toUTCString()
       const description = [picture.target, picture.optics, picture.camera]
         .filter(Boolean)
         .join(' — ')
@@ -74,10 +78,10 @@ export async function GET() {
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(description)}</description>
-      <enclosure url="${thumb}" length="${thumbLength}" type="image/webp" />
-      <media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="${thumb}" />
+      <enclosure url="${escapeXml(thumb)}" length="${thumbLength}" type="image/webp" />
+      <media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="${escapeXml(thumb)}" />
       <content:encoded><![CDATA[
-        <img src="${thumb}" alt="${escapeXml(title)}" />
+        <img src="${escapeXml(thumb)}" alt="${escapeXml(title)}" />
         <p>${escapeXml(description)}</p>
       ]]></content:encoded>
     </item>`
@@ -92,7 +96,7 @@ export async function GET() {
     <description>Dernières photos astro publiées sur Circumpolar</description>
     <language>fr</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${absoluteUrl('/rss.xml')}" rel="self" type="application/rss+xml" />
     ${items.join('')}
   </channel>
 </rss>`

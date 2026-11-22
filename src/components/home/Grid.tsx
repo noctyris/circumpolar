@@ -18,9 +18,9 @@ export default function Grid({ images }: { images: Picture[] }) {
       className="flex w-auto -ml-4" 
       columnClassName="pl-4 bg-clip-padding"
     >
-      {images.map((img) => (
+      {images.map((img, index) => (
         <div key={img.id} className="mb-4">
-          <AstroImage image={img} />
+          <AstroImage image={img} priority={index < 3} />
         </div>
       ))}
     </Masonry>

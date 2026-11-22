@@ -1,13 +1,13 @@
 "use client";
-import { getCldImageUrl } from "next-cloudinary";
-import { useEffect, useRef } from "react";
 
-/**
- * Affichage d'une image sur un <canvas> : dissuasion visuelle uniquement
- * (clic droit, glisser-déposer). Ce n'est pas un contrôle d'accès — l'URL
- * Cloudinary reste dérivable et l'image est de toute façon téléchargée par le
- * navigateur.
- */
+/* eslint-disable @next/next/no-img-element -- The protected gallery needs the
+ * native image element for Cloudinary's variable aspect ratios and its own
+ * Cloudinary loader. Next Image requires a fixed box or fill layout, which
+ * would either crop the photos or change the masonry layout. */
+import { getCldImageUrl } from "next-cloudinary";
+
+type Loading = "lazy" | "eager";
+
 export default function ProtectedImage({
   src,
   alt,
@@ -16,6 +16,8 @@ export default function ProtectedImage({
   classname,
   wrapperClassname,
   fill = false,
+  loading = "lazy",
+  priority = false,
   onLoad,
   onError,
 }: {
@@ -26,13 +28,11 @@ export default function ProtectedImage({
   classname: string;
   wrapperClassname?: string;
   fill?: boolean;
+  loading?: Loading;
+  priority?: boolean;
   onLoad?: () => void;
   onError?: () => void;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const onLoadRef = useRef(onLoad);
-  const onErrorRef = useRef(onError);
-
   const url = getCldImageUrl({
     width: width || "800",
     height,
@@ -42,57 +42,28 @@ export default function ProtectedImage({
     transformations: [],
   });
 
-  useEffect(() => {
-    onLoadRef.current = onLoad;
-  }, [onLoad]);
-
-  useEffect(() => {
-    onErrorRef.current = onError;
-  }, [onError]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let active = true;
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = url;
-
-    img.onload = () => {
-      if (!active) return;
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      onLoadRef.current?.();
-    };
-
-    img.onerror = () => {
-      if (active) onErrorRef.current?.();
-    };
-
-    return () => {
-      active = false;
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [url]);
+  const numericWidth = width ? Number(width) : undefined;
+  const numericHeight = height ? Number(height) : undefined;
 
   return (
-    <div className={`group cursor-zoom-in ${wrapperClassname ?? "relative"}`}>
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label={alt}
+    <div className={`group overflow-hidden ${wrapperClassname ?? "relative"}`}>
+      <img
+        src={url}
+        alt={alt ?? ""}
+        width={fill ? undefined : Number.isFinite(numericWidth) ? numericWidth : undefined}
+        height={fill ? undefined : Number.isFinite(numericHeight) ? numericHeight : undefined}
+        loading={priority ? "eager" : loading}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        draggable={false}
         onContextMenu={(event) => event.preventDefault()}
-        className={`${classname} ${fill ? "h-full w-full" : "h-auto"}`}
-        style={{ userSelect: "none", touchAction: "none" }}
+        onDragStart={(event) => event.preventDefault()}
+        onLoad={onLoad}
+        onError={onError}
+        className={`${classname} ${fill ? "absolute inset-0 h-full w-full" : ""}`}
       />
-      <noscript>
-        <img src={url} alt={alt ?? ""} className={`${classname} h-auto`} draggable={false} />
-      </noscript>
       <div
+        aria-hidden="true"
         className="absolute inset-0 z-10"
         onContextMenu={(event) => event.preventDefault()}
         onDragStart={(event) => event.preventDefault()}
