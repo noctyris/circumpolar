@@ -17,7 +17,7 @@ function isSecureRequest(req: NextRequest): boolean {
   return req.nextUrl.protocol === "https:";
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Les routes d'authentification doivent rester publiques, sinon plus de login.
