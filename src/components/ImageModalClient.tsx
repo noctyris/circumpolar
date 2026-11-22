@@ -1,17 +1,26 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ArrowUpRight, X } from "lucide-react";
 import ProtectedImage from "./ProtectedImage";
-import { Picture, formatDuration } from "@/types";
+import ImageDetails from "./ImageDetails";
+import { Picture } from "@/types";
 
 export default function ImageModalClient({ image }: { image: Picture }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (!dialogRef.current?.open) {
-      dialogRef.current?.showModal();
-    }
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
   }, []);
 
   function onDismiss() {
@@ -22,68 +31,41 @@ export default function ImageModalClient({ image }: { image: Picture }) {
     <dialog
       ref={dialogRef}
       onClose={onDismiss}
-      className="m-0 h-screen w-screen max-w-none bg-black/60 backdrop-blur-md text-white p-0 border-none outline-none overflow-hidden"
+      className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden border-none bg-black/60 p-0 text-white outline-none backdrop-blur-md"
     >
-      <div className="flex flex-col md:flex-row h-full w-full">
-        <div className="flex-1 flex items-center justify-center p-4 md:p-12 relative" onClick={onDismiss}>
-          <div className="relative z-10 w-full max-w-4xl aspect-square bg-white/5 rounded-lg border border-white/10 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="absolute inset-0 flex items-center justify-center text-white/10 font-mono italic">
-              <ProtectedImage
-                src={image.publicid}
-                alt={`${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}`}
-                width="" 
-                classname="w-full h-auto block duration-500"
-              />
-            </div>
+      <div className="flex h-full w-full flex-col md:flex-row">
+        <div className="relative flex h-[50dvh] shrink-0 items-center justify-center p-4 md:h-full md:flex-1 md:p-10">
+          <div className="max-h-full max-w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 shadow-2xl">
+            <ProtectedImage
+              src={image.publicid}
+              alt={`${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}`}
+              width="1600"
+              classname="max-h-[42dvh] w-auto max-w-full object-contain md:max-h-[78vh]"
+            />
           </div>
-        </div>
 
-        <div className="w-full md:w-[450px] h-full bg-[#0a0a0a]/90 border-l border-white/10 p-8 flex flex-col shadow-2xl backdrop-blur-2xl">
-          <button onClick={onDismiss} className="self-end p-2 hover:bg-white/10 rounded-full mb-4">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          <button
+            onClick={onDismiss}
+            aria-label="Fermer"
+            className="absolute right-3 top-3 z-30 rounded-full border border-white/10 bg-black/60 p-2.5 text-white/70 backdrop-blur transition hover:bg-white/10 hover:text-white md:right-5 md:top-5"
+          >
+            <X className="h-5 w-5" />
           </button>
-
-          <div className="flex-1 overflow-y-auto space-y-8 pr-2">
-            <header>
-              <span className="text-accent font-mono text-[10px] tracking-[0.3em] uppercase mb-2 block">{image.target_category}</span>
-              <h2 className="font-syncopate text-3xl leading-tight tracking-tighter">{image.title || image.target}</h2>
-              {image.title && <span className="text-accent font-mono text-l tracking-[0.3em] uppercase my-2 block text-center text-white/60">– {image.target} –</span>}
-              <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 pb-2 text-center">
-                {new Intl.DateTimeFormat('fr-FR').format(new Date(image.capture_date))}
-              </h3>
-            </header>
-
-            <section className="space-y-4">
-              <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 border-b border-white/5 pb-2">Détails</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {image.capture_data && (
-                   <div className="space-y-1">
-                     <p className="text-[10px] font-geist text-white/30 uppercase">Capture{image.capture_data.length>1 && "s"}</p>
-                       {image.capture_data.map((f, i) => (
-                         <p key={i} className="font-mono text-sm">{f.filter}: {formatDuration(f.exposure)} × {f.count}</p>
-                       ))}
-                    </div>
-                )}
-                    <div className="space-y-1">
-                       <p className="text-[10px] font-geist text-white/30 uppercase">Longueur focale</p>
-                       <p className="font-mono text-sm">{image.focal_length} mm</p>
-                       <p className="text-[10px] font-geist text-white/30 uppercase">Valeur d{"'"}ouverture</p>
-                       <p className="font-mono text-sm">f/{image.f_number}</p>
-                    </div>
-                 </div>
-              </section>
-
-              <section className="space-y-4">
-                 <h3 className="font-sora text-xs uppercase tracking-widest text-white/40 border-b border-white/5 pb-2">Équipement</h3>
-                 <ul className="text-sm font-geist text-white/70 space-y-2 italic">
-                   <li>{image.optics}</li>
-                   <li>{image.camera}</li>
-                   <li>{image.accessories}</li>
-                   {image.mount && <li>{image.mount}</li>}
-                 </ul>
-              </section>
-           </div>
         </div>
+
+        <aside className="flex min-h-0 w-full flex-1 flex-col border-t border-white/10 bg-[#0a0a0a]/95 md:w-[430px] md:flex-none md:border-l md:border-t-0">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:p-7">
+            <ImageDetails image={image} />
+
+            <Link
+              href={`/image/${image.id}`}
+              className="mt-8 inline-flex items-center gap-2 font-subtitle text-[10px] uppercase tracking-widest text-white/40 transition hover:text-white"
+            >
+              Voir la page complète
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </aside>
       </div>
     </dialog>
   );

@@ -3,6 +3,9 @@
 @theme {
   --color-background: #0a0a0a;
   --color-foreground: #ededed;
+  --color-accent: #6366f1;
+  --color-accent-dark: #4f46e5;
+  --color-accent-light: #818cf8;
   --font-title: var(--font-syncopate), sans-serif;
   --font-subtitle: var(--font-sora), sans-serif;
   --font-body: var(--font-geist), sans-serif;
