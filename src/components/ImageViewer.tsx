@@ -114,12 +114,33 @@ export default function ImageViewer({
     setZoomFailedSrc(src);
   }, [src]);
 
+  const closeZoom = useCallback(() => {
+    const dialog = dialogRef.current;
+    if (dialog?.open) dialog.close();
+    else setZoomed(false);
+  }, []);
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (zoomed && !dialog.open) dialog.showModal();
     if (!zoomed && dialog.open) dialog.close();
   }, [zoomed]);
+
+  useEffect(() => {
+    if (!zoomed) return;
+
+    // Échap ferme d'abord le zoom et ne doit pas atteindre la modale parente.
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeZoom();
+    }
+
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [closeZoom, zoomed]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -145,10 +166,6 @@ export default function ImageViewer({
     pointers.current.clear();
     pinch.current = null;
     pan.current = null;
-  }
-
-  function closeZoom() {
-    dialogRef.current?.close();
   }
 
   function changeScale(delta: number) {
@@ -316,9 +333,15 @@ export default function ImageViewer({
       {zoomed && (
         <dialog
           ref={dialogRef}
-          onClose={() => {
+          onClose={(event) => {
+            event.stopPropagation();
             resetView();
             setZoomed(false);
+          }}
+          onCancel={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            closeZoom();
           }}
           aria-label={`Image agrandie — ${title}`}
           className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden border-none bg-[#050505] p-0 text-white backdrop:bg-black/80"

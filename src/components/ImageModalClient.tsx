@@ -28,7 +28,11 @@ export default function ImageModalClient({ image }: { image: Picture }) {
   return (
     <dialog
       ref={dialogRef}
-      onClose={onDismiss}
+      onClose={(event) => {
+        // Un close venu du zoom imbriqué ne doit pas faire remonter la route.
+        if (event.target !== event.currentTarget) return;
+        onDismiss();
+      }}
       aria-label={`${title} — ${image.target_category}`}
       className="m-0 h-[100dvh] w-screen max-w-none overflow-hidden border-none bg-black/60 p-0 text-white outline-none backdrop-blur-md"
     >
