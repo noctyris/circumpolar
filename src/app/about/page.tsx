@@ -6,12 +6,12 @@ import { ArrowLeft, ArrowUpRight, Camera, MapPin, Sparkles, Telescope } from "lu
 export const metadata: Metadata = {
   title: "À propos",
   description:
-    "Noctyris, astrophotographe amateur : ciel profond, lunaire, solaire et planétaire. Le matériel, la méthode et les liens derrière Circumpolar.",
+    "Noctyris, photos du ciel depuis le Morbihan. Ciel profond, Lune, Soleil, planétaire, et les infos derrière chaque image.",
   openGraph: {
     type: "profile",
     title: "À propos — Noctyris",
     description:
-      "Astrophotographe amateur, je documente mes nuits entre ciel profond et système solaire.",
+      "Je fais des photos du ciel depuis le Morbihan, surtout en ciel profond. Mon matériel, comment je travaille et mes liens.",
   },
 };
 
@@ -65,14 +65,13 @@ export default function AboutPage() {
           </h1>
 
           <p className="max-w-2xl font-body text-base leading-relaxed text-white/60 sm:text-lg">
-            Je photographie le ciel comme on tient un carnet de bord : une nuit, un objet, des conditions,
-            des essais — et ce que l’on finit par comprendre en regardant les fichiers de près.
+            Je fais des photos du ciel depuis le Morbihan. Surtout du ciel profond, mais ça m’arrive aussi de
+            viser la Lune, le Soleil ou les planètes.
           </p>
 
           <p className="max-w-2xl font-body text-sm leading-relaxed text-white/45 sm:text-base">
-            Mes images sont réalisées principalement dans le Morbihan, sous un ciel de campagne autour de la
-            classe de Bortle 4. Le ciel profond reste mon terrain de jeu principal, mais le lunaire, le solaire
-            et le planétaire me ramènent régulièrement au télescope.
+            Ici, je range les images avec les infos de la nuit. Le ciel est pas trop mauvais par ici,
+            Bortle 4 environ, donc y a déjà de quoi faire.
           </p>
 
           <div className="flex flex-wrap gap-2 pt-1">
@@ -96,18 +95,17 @@ export default function AboutPage() {
         <div className="space-y-10">
           <section className="space-y-4">
             <h2 className="border-b border-white/10 pb-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/45">
-              Pourquoi Circumpolar
+              Pourquoi ce site
             </h2>
             <div className="space-y-4 font-body text-sm leading-relaxed text-white/60 sm:text-base">
               <p>
-                Circumpolar est né d’une envie simple : sortir les images du disque dur et garder, avec elles,
-                ce qui les rend uniques. Un titre seul ne raconte pas une nuit. Le temps d’intégration, le filtre,
-                la monture ou la qualité du ciel le font beaucoup mieux.
+                J’ai créé Circumpolar parce que mes images restaient tout le temps sur le disque dur. Et quand je
+                les rouvre des mois après, je me souviens pas toujours du temps de pose, du filtre ou du ciel
+                qu’il y avait.
               </p>
               <p>
-                Chaque fiche rassemble donc les métadonnées d’acquisition et, quand elle existe, une version
-                annotée qui remet les objets célestes dans leur contexte. C’est autant un portfolio qu’un
-                carnet d’observation que je peux relire des mois plus tard.
+                Du coup, chaque fiche garde les infos de la prise de vue avec l’image, et la version annotée
+                quand j’en ai une. Ça me fait un portfolio et un carnet d’observation en même temps.
               </p>
             </div>
           </section>
@@ -119,16 +117,16 @@ export default function AboutPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[
                 {
-                  title: "Acquérir",
-                  text: "Préparer la cible, soigner la mise en station, empiler les poses jusqu’à ce que le signal tienne.",
+                  title: "Sur le terrain",
+                  text: "Je prépare la cible, je soigne la mise en station et j’empile les poses jusqu’à avoir assez de signal.",
                 },
                 {
-                  title: "Traiter",
-                  text: "Siril pour le ciel profond, AutoStakkert! et Registax pour les plans serrés, puis les finitions.",
+                  title: "Au traitement",
+                  text: "Siril pour le ciel profond, AutoStakkert! et Registax pour la Lune, le Soleil et les planètes, puis GIMP pour les finitions.",
                 },
                 {
-                  title: "Documenter",
-                  text: "Noter le matériel, les filtres et le ciel pour que chaque image raconte sa propre nuit.",
+                  title: "Les notes",
+                  text: "Je note le matériel, les filtres et les conditions. Comme ça, chaque image garde le contexte de sa nuit.",
                 },
               ].map((step, index) => (
                 <div key={step.title} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
