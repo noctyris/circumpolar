@@ -17,7 +17,6 @@ export default function Footer() {
                     <p className="flex items-center gap-1.5 font-body text-xs text-white/60">
                         Fait avec
                         <Heart aria-hidden="true" className="h-3.5 w-3.5 fill-rose-400/80 text-rose-400" />
-                        sous le ciel du Morbihan
                     </p>
                 </div>
                 <div className="flex items-center gap-2 sm:justify-end">
