@@ -9,7 +9,6 @@ export function missingPictureFields(image: Picture): string[] {
     missing.push("coordonnées");
   }
 
-  if (!image.mount) missing.push("monture");
   if (!image.processing_software?.length) missing.push("logiciels");
 
   return missing;
