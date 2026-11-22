@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
+import { normalizeList } from "@/lib/picture-lists";
 
 export async function GET() {
   const session = await auth();
@@ -22,8 +23,8 @@ export async function GET() {
       sql`SELECT DISTINCT optics FROM pictures WHERE optics IS NOT NULL AND optics != '' ORDER BY optics ASC`,
       sql`SELECT DISTINCT camera FROM pictures WHERE camera IS NOT NULL AND camera != '' ORDER BY camera ASC`,
       sql`SELECT DISTINCT mount FROM pictures WHERE mount IS NOT NULL AND mount != '' ORDER BY mount ASC`,
-      sql`SELECT DISTINCT accessories FROM pictures WHERE accessories IS NOT NULL AND accessories != '' ORDER BY accessories ASC`,
-      sql`SELECT DISTINCT processing_software FROM pictures WHERE processing_software IS NOT NULL AND processing_software != '' ORDER BY processing_software ASC`,
+      sql`SELECT DISTINCT accessories FROM pictures WHERE accessories IS NOT NULL`,
+      sql`SELECT DISTINCT processing_software FROM pictures WHERE processing_software IS NOT NULL`,
       sql`SELECT DISTINCT location FROM pictures WHERE location IS NOT NULL AND location != '' ORDER BY location ASC`,
       sql`SELECT DISTINCT elem->>'filter' AS filter FROM pictures, jsonb_array_elements(capture_data) AS elem WHERE elem->>'filter' IS NOT NULL AND elem ->>'filter' != '' ORDER BY filter ASC`
     ]);
@@ -47,14 +48,20 @@ export async function GET() {
       typeof row.filter === "string" ? [row.filter] : []
     );
     const mergedFilters = Array.from(new Set([...dbFilters, ...defaultFilters])).sort();
+    const accessoryValues = Array.from(
+      new Set(accessoriesRows.flatMap((row) => normalizeList(row.accessories) ?? []))
+    ).sort();
+    const softwareValues = Array.from(
+      new Set(softwareRows.flatMap((row) => normalizeList(row.processing_software) ?? []))
+    ).sort();
 
     return NextResponse.json(
       {
         optics: opticsRows.map((r) => r.optics),
         camera: cameraRows.map((r) => r.camera),
         mount: mountRows.map((r) => r.mount),
-        accessories: accessoriesRows.map((r) => r.accessories),
-        processing_softwares: softwareRows.map((r) => r.processing_software),
+        accessories: accessoryValues,
+        processing_softwares: softwareValues,
         location: locationRows.map((r) => r.location),
         filters: mergedFilters,
       },

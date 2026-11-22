@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Maximize2, Minus, Plus, RotateCcw, X } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent,
+} from "react";
+import { LoaderCircle, Maximize2, Minus, Plus, RotateCcw, X } from "lucide-react";
 import ProtectedImage from "./ProtectedImage";
+import useBodyScrollLock from "./useBodyScrollLock";
 import { Picture } from "@/types";
 
-const MAX_SCALE = 6;
+const MAX_SCALE = 4;
+const ZOOM_WIDTH = "3000";
 
 const zoomButton =
   "rounded-full border border-white/10 bg-white/5 p-2.5 text-white/70 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30";
+
+type View = { scale: number; x: number; y: number };
+type FocalPoint = { clientX: number; clientY: number };
 
 function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
   return Math.hypot(a.x - b.x, a.y - b.y);
@@ -26,11 +38,47 @@ function clampOffset(stage: HTMLDivElement | null, x: number, y: number, scale: 
   };
 }
 
-export default function ImageViewer({ image, classname }: { image: Picture; classname?: string }) {
+function zoomTo(
+  current: View,
+  nextScale: number,
+  focal: FocalPoint | null,
+  stage: HTMLDivElement | null
+): View {
+  const scale = Math.min(MAX_SCALE, Math.max(1, nextScale));
+  if (Math.abs(scale - current.scale) < 0.001) return current;
+
+  if (scale === 1) return { scale, x: 0, y: 0 };
+  if (!stage || !focal) {
+    return { scale, ...clampOffset(stage, current.x, current.y, scale) };
+  }
+
+  // Le point sous le curseur (ou entre les deux doigts) reste immobile.
+  const rect = stage.getBoundingClientRect();
+  const px = focal.clientX - rect.left - rect.width / 2;
+  const py = focal.clientY - rect.top - rect.height / 2;
+  const x = px - ((px - current.x) / current.scale) * scale;
+  const y = py - ((py - current.y) / current.scale) * scale;
+
+  return { scale, ...clampOffset(stage, x, y, scale) };
+}
+
+export default function ImageViewer({
+  image,
+  className,
+  frameClassName,
+}: {
+  image: Picture;
+  className?: string;
+  frameClassName?: string;
+}) {
   const [annotated, setAnnotated] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
+  const [view, setView] = useState<View>({ scale: 1, x: 0, y: 0 });
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const [zoomLoadedSrc, setZoomLoadedSrc] = useState<string | null>(null);
+  const [zoomFailedSrc, setZoomFailedSrc] = useState<string | null>(null);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -41,6 +89,30 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
   const src = annotated && image.annotated_publicid ? image.annotated_publicid : image.publicid;
   const title = image.title || image.target;
   const alt = `${image.target}${image.title ? ` — ${image.title}` : ""} — ${image.target_category}${annotated ? " (annotée)" : ""}`;
+  const previewReady = loadedSrc === src;
+  const previewFailed = failedSrc === src;
+  const zoomReady = zoomLoadedSrc === src;
+  const zoomFailed = zoomFailedSrc === src;
+
+  useBodyScrollLock(zoomed);
+
+  const handlePreviewLoad = useCallback(() => {
+    setLoadedSrc(src);
+    setFailedSrc(null);
+  }, [src]);
+
+  const handlePreviewError = useCallback(() => {
+    setFailedSrc(src);
+  }, [src]);
+
+  const handleZoomLoad = useCallback(() => {
+    setZoomLoadedSrc(src);
+    setZoomFailedSrc(null);
+  }, [src]);
+
+  const handleZoomError = useCallback(() => {
+    setZoomFailedSrc(src);
+  }, [src]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -55,24 +127,16 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
 
     function onWheel(event: WheelEvent) {
       event.preventDefault();
-      setView((current) => {
-        const scale = Math.min(MAX_SCALE, Math.max(1, current.scale - event.deltaY * 0.0015));
-        return { scale, ...clampOffset(stage, current.x, current.y, scale) };
-      });
+      const deltaMultiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1;
+      const focal = { clientX: event.clientX, clientY: event.clientY };
+
+      setView((current) =>
+        zoomTo(current, current.scale - event.deltaY * deltaMultiplier * 0.0015, focal, stage)
+      );
     }
 
     stage.addEventListener("wheel", onWheel, { passive: false });
     return () => stage.removeEventListener("wheel", onWheel);
-  }, [zoomed]);
-
-  useEffect(() => {
-    if (!zoomed) return;
-
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = overflow;
-    };
   }, [zoomed]);
 
   function resetView() {
@@ -88,16 +152,7 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
   }
 
   function changeScale(delta: number) {
-    setView((current) => {
-      const scale = Math.min(MAX_SCALE, Math.max(1, current.scale + delta));
-      return { scale, ...clampOffset(stageRef.current, current.x, current.y, scale) };
-    });
-  }
-
-  function toggleZoom() {
-    setView((current) =>
-      current.scale > 1 ? { scale: 1, x: 0, y: 0 } : { scale: 2.5, x: 0, y: 0 }
-    );
+    setView((current) => zoomTo(current, current.scale + delta, null, stageRef.current));
   }
 
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -121,10 +176,16 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
     const gesture = pinch.current;
     if (pointers.current.size === 2 && gesture) {
       const [a, b] = Array.from(pointers.current.values());
-      setView((current) => {
-        const scale = Math.min(MAX_SCALE, Math.max(1, gesture.scale * (distance(a, b) / gesture.distance)));
-        return { scale, ...clampOffset(stageRef.current, current.x, current.y, scale) };
-      });
+      const focal = { clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 };
+
+      setView((current) =>
+        zoomTo(
+          current,
+          gesture.scale * (distance(a, b) / gesture.distance),
+          focal,
+          stageRef.current
+        )
+      );
       return;
     }
 
@@ -153,16 +214,58 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
     pan.current = { x: point.x, y: point.y, offsetX: view.x, offsetY: view.y };
   }
 
+  function onDoubleClick(event: MouseEvent<HTMLDivElement>) {
+    if (view.scale > 1) {
+      resetView();
+      return;
+    }
+
+    setView((current) =>
+      zoomTo(
+        current,
+        2.5,
+        { clientX: event.clientX, clientY: event.clientY },
+        stageRef.current
+      )
+    );
+  }
+
   return (
     <>
-      <div className="w-full space-y-3">
-        <div className="relative w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+      <div className={`w-full ${className ?? "space-y-3"}`}>
+        <div
+          className={`relative w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] ${
+            frameClassName ?? "aspect-[4/3]"
+          }`}
+        >
           <ProtectedImage
             src={src}
             alt={alt}
             width="1600"
-            classname={`w-full object-contain ${classname ?? "max-h-[78vh]"}`}
+            wrapperClassname="absolute inset-0"
+            classname="object-contain"
+            fill
+            onLoad={handlePreviewLoad}
+            onError={handlePreviewError}
           />
+
+          {!previewReady && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/[0.02]">
+              {previewFailed ? (
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+                  Image indisponible
+                </p>
+              ) : (
+                <>
+                  <LoaderCircle className="h-6 w-6 animate-spin text-white/40" aria-hidden="true" />
+                  <span className="sr-only" role="status">
+                    Chargement de l’image…
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => setZoomed(true)}
@@ -175,9 +278,13 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
           {image.annotated_publicid ? (
-            <div role="group" aria-label="Version de l'image" className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
+            <div
+              role="group"
+              aria-label="Version de l'image"
+              className="inline-flex rounded-full border border-white/10 bg-white/5 p-1"
+            >
               <button
                 type="button"
                 onClick={() => setAnnotated(false)}
@@ -199,7 +306,7 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
             <span />
           )}
 
-          <span className="font-mono text-[10px] uppercase tracking-widest text-white/30">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-white/45">
             <span className="sm:hidden">Toucher pour agrandir</span>
             <span className="hidden sm:inline">Cliquer pour agrandir</span>
           </span>
@@ -219,8 +326,10 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
           <div className="flex h-full flex-col">
             <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-6">
               <div className="min-w-0">
-                <p className="truncate font-subtitle text-xs uppercase tracking-[0.2em] text-white/70">{title}</p>
-                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/30">
+                <p className="truncate font-subtitle text-xs uppercase tracking-[0.2em] text-white/70">
+                  {title}
+                </p>
+                <p className="truncate font-mono text-[10px] uppercase tracking-widest text-white/40">
                   {annotated ? "Version annotée" : image.target}
                 </p>
               </div>
@@ -236,12 +345,18 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
 
             <div
               ref={stageRef}
-              className="relative flex min-h-0 flex-1 touch-none select-none items-center justify-center overflow-hidden"
+              className={`relative flex min-h-0 flex-1 touch-none select-none items-center justify-center overflow-hidden ${
+                view.scale > 1
+                  ? dragging
+                    ? "cursor-grabbing"
+                    : "cursor-grab"
+                  : "cursor-zoom-in"
+              }`}
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
-              onDoubleClick={toggleZoom}
+              onDoubleClick={onDoubleClick}
             >
               <div
                 className="flex max-h-full max-w-full items-center justify-center"
@@ -253,25 +368,67 @@ export default function ImageViewer({ image, classname }: { image: Picture; clas
                 <ProtectedImage
                   src={src}
                   alt={alt}
-                  width="2400"
+                  width={ZOOM_WIDTH}
                   classname="max-h-[calc(100dvh-9rem)] w-auto max-w-[92vw] object-contain"
+                  onLoad={handleZoomLoad}
+                  onError={handleZoomError}
                 />
               </div>
+
+              {!zoomReady && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  {zoomFailed ? (
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+                      Image indisponible
+                    </p>
+                  ) : (
+                    <>
+                      <LoaderCircle className="h-7 w-7 animate-spin text-white/40" aria-hidden="true" />
+                      <span className="sr-only" role="status">
+                        Chargement du zoom…
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-center gap-2 border-t border-white/10 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-3">
-              <button type="button" onClick={() => changeScale(-0.5)} disabled={view.scale <= 1} aria-label="Dézoomer" className={zoomButton}>
+            <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/10 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 sm:gap-3">
+              <button
+                type="button"
+                onClick={() => changeScale(-0.5)}
+                disabled={view.scale <= 1}
+                aria-label="Dézoomer"
+                className={zoomButton}
+              >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="min-w-14 text-center font-mono text-xs text-white/60">{Math.round(view.scale * 100)} %</span>
-              <button type="button" onClick={() => changeScale(0.5)} disabled={view.scale >= MAX_SCALE} aria-label="Zoomer" className={zoomButton}>
+              <span
+                aria-live="polite"
+                className="min-w-14 text-center font-mono text-xs text-white/60"
+              >
+                {Math.round(view.scale * 100)} %
+              </span>
+              <button
+                type="button"
+                onClick={() => changeScale(0.5)}
+                disabled={view.scale >= MAX_SCALE}
+                aria-label="Zoomer"
+                className={zoomButton}
+              >
                 <Plus className="h-4 w-4" />
               </button>
-              <button type="button" onClick={resetView} disabled={view.scale === 1} aria-label="Réinitialiser le zoom" className={zoomButton}>
+              <button
+                type="button"
+                onClick={resetView}
+                disabled={view.scale === 1}
+                aria-label="Réinitialiser le zoom"
+                className={zoomButton}
+              >
                 <RotateCcw className="h-4 w-4" />
               </button>
-              <span className="ml-2 hidden font-mono text-[10px] uppercase tracking-widest text-white/25 sm:block">
-                Molette · pincement · double-clic
+              <span className="hidden font-mono text-[10px] uppercase tracking-widest text-white/30 sm:block">
+                Molette · pincement · double-clic · glisser
               </span>
             </div>
           </div>

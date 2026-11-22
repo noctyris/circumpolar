@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
+import { prepareListForDb } from "@/app/lib/list-columns";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -33,6 +34,14 @@ export async function POST(req: NextRequest) {
       bortle_class,
       location,
     } = data;
+
+    const accessoryList = await prepareListForDb(accessories, "accessories");
+    const softwareList = await prepareListForDb(
+      processing_software ?? processing_softwares,
+      "processing_software"
+    );
+    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
+    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
 
     // Validation des champs NOT NULL requis par la base
     if (
@@ -80,11 +89,11 @@ export async function POST(req: NextRequest) {
         ${optics},
         ${camera},
         ${mount || null},
-        ${accessories || null},
+        ${accessoryParam},
         ${focal_length !== null && focal_length !== undefined ? focal_length : null},
         ${f_number !== null && f_number !== undefined ? f_number : null},
         ${sql.json(capture_data && capture_data.length > 0 ? capture_data : [])},
-        ${processing_software || processing_softwares || null},
+        ${softwareParam},
         ${ra !== null && ra !== undefined ? ra : null},
         ${dec !== null && dec !== undefined ? dec : null},
         ${bortle_class !== null && bortle_class !== undefined ? bortle_class : null},

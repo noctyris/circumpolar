@@ -14,11 +14,11 @@ export interface Picture {
   optics:               string;
   camera:               string;
   mount?:               string;
-  accessories?:         string;
+  accessories?:         string[];
   focal_length?:        number;
   f_number?:            number;
   capture_data:         filter_t[];
-  processing_software?: string;
+  processing_software?: string[];
   ra?:                  number;
   dec?:                 number;
   bortle_class?:        number;

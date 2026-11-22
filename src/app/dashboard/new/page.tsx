@@ -1,45 +1,59 @@
 "use client";
 
 import { CloudinaryUploadWidgetResults } from "next-cloudinary";
-import { useState, FormEvent, useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Send } from "lucide-react";
-import UploadButton from '@/components/dashboard/UploadButton';
+import { Info, MapPin, Send, Telescope, Timer } from "lucide-react";
+import UploadButton from "@/components/dashboard/UploadButton";
 import RequiredField from "@/components/dashboard/RequiredField";
+import FormTabs from "@/components/dashboard/FormTabs";
+import ListField from "@/components/dashboard/ListField";
 
 interface CaptureRow {
-    filter:     string;
-    count:      number | "";
-    exposure:   number | "";
+    filter: string;
+    count: number | "";
+    exposure: number | "";
 }
 
+type TabId = "general" | "equipment" | "acquisition" | "location";
+
+const isTabId = (value: string | undefined): value is TabId =>
+    value === "general" || value === "equipment" || value === "acquisition" || value === "location";
+
+const tabConfig = [
+    { id: "general", label: "Général", icon: Info },
+    { id: "equipment", label: "Matériel", icon: Telescope },
+    { id: "acquisition", label: "Acquisition", icon: Timer },
+    { id: "location", label: "Localisation", icon: MapPin },
+] as const;
 
 export default function UploadPage() {
     const router = useRouter();
+    const [activeTab, setActiveTab] = useState<TabId>("general");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     // Media
     const [publicId, setPublicId] = useState("");
     const [annotatedPublicId, setAnnotatedPublicId] = useState("");
-    
+
     // Main informations
     const [title, setTitle] = useState("");
     const [target, setTarget] = useState("");
-    const [targetCategory, setTargetCategory] = useState("Catégorie");
+    const [targetCategory, setTargetCategory] = useState("");
     const [captureDate, setCaptureDate] = useState("");
-    
+
     // Hardware & Optics
     const [optics, setOptics] = useState("");
     const [camera, setCamera] = useState("");
     const [mount, setMount] = useState("");
-    const [accessories, setAccessories] = useState("");
+    const [accessories, setAccessories] = useState<string[]>([]);
     const [focalLength, setFocalLength] = useState<number | "">("");
     const [fNumber, setFNumber] = useState<number | "">("");
 
     // Capture & Processing
     const [captureRows, setCaptureRows] = useState<CaptureRow[]>([]);
-    const [processingSoftwares, setProcessingSoftwares] = useState("");
+    const [processingSoftwares, setProcessingSoftwares] = useState<string[]>([]);
 
     // Coords & Sky
     const [ra, setRa] = useState<number | "">("");
@@ -71,14 +85,18 @@ export default function UploadPage() {
             .then((data) => {
                 if (!data.error) setSuggestions(data);
             })
-            .catch(console.error)
+            .catch(console.error);
     }, []);
 
     const addCaptureRow = () => {
-        setCaptureRows([...captureRows, {filter: "", count: "", exposure: ""}])
+        setCaptureRows([...captureRows, { filter: "", count: "", exposure: "" }]);
     };
 
-    const updateCaptureRow = (index: number, field: keyof CaptureRow, value: CaptureRow[keyof CaptureRow]) => {
+    const updateCaptureRow = (
+        index: number,
+        field: keyof CaptureRow,
+        value: CaptureRow[keyof CaptureRow]
+    ) => {
         const updated = [...captureRows];
         updated[index] = { ...updated[index], [field]: value };
         setCaptureRows(updated);
@@ -86,21 +104,46 @@ export default function UploadPage() {
 
     const removeCaptureRow = (index: number) => {
         setCaptureRows(captureRows.filter((_, i) => i !== index));
-    }
+    };
+
     const handleMainUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
         if (result?.info && typeof result.info === "object" && "public_id" in result.info) {
             setPublicId(result.info.public_id);
         }
     };
+
     const handleAnnotatedUploadSuccess = (result: CloudinaryUploadWidgetResults) => {
         if (result?.info && typeof result.info === "object" && "public_id" in result.info) {
             setAnnotatedPublicId(result.info.public_id);
         }
     };
-    const handleSubmit = async (e: FormEvent) => {
+
+    function showFirstInvalid(form: HTMLFormElement): boolean {
+        const invalid = form.querySelector<HTMLElement>(":invalid");
+        if (!invalid) return false;
+
+        const tab = invalid.closest<HTMLElement>("[data-form-tab]")?.dataset.formTab;
+        if (isTabId(tab)) setActiveTab(tab);
+        requestAnimationFrame(() => form.reportValidity());
+
+        return true;
+    }
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const form = e.currentTarget;
+
+        if (showFirstInvalid(form)) return;
+
+        if (!publicId) {
+            setError("Ajoute d'abord l'image principale.");
+            setActiveTab("general");
+            return;
+        }
+
         setLoading(true);
         setError(null);
+
         const payload = {
             title,
             target,
@@ -111,21 +154,28 @@ export default function UploadPage() {
             optics,
             camera,
             mount: mount || null,
-            accessories: accessories || null,
+            accessories: accessories.length > 0 ? accessories : null,
             focal_length: focalLength !== "" ? Number(focalLength) : null,
             f_number: fNumber !== "" ? Number(fNumber) : null,
-            capture_data: captureRows.filter(r => r.filter && (Number(r.count !== "" ? r.count : 0) > 0)),
-            processing_softwares: processingSoftwares || null,
+            capture_data: captureRows
+                .filter((row) => row.filter && Number(row.count) > 0)
+                .map((row) => ({
+                    filter: row.filter.trim(),
+                    count: Number(row.count),
+                    exposure: Number(row.exposure),
+                })),
+            processing_software: processingSoftwares.length > 0 ? processingSoftwares : null,
             ra: ra !== "" ? Number(ra) : null,
             dec: dec !== "" ? Number(dec) : null,
             bortle_class: bortleClass !== "" ? Number(bortleClass) : null,
-            location: location || null
-        }
+            location: location || null,
+        };
+
         try {
             const res = await fetch("/api/add-picture", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
             });
             if (!res.ok) throw new Error("Erreur lors de l'enregistrement");
             router.push("/dashboard");
@@ -136,155 +186,371 @@ export default function UploadPage() {
         }
     };
 
+    const [generalTab, equipmentTab, acquisitionTab, locationTab] = tabConfig;
+
     return (
-        <div className="max-w-4xl mx-auto px-4">
-            <h1 className="text-2xl font-bold mb-6">Nouvelle capture</h1>
+        <div className="mx-auto max-w-4xl px-4">
+            <header className="mb-6 space-y-2">
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-cyan-400">
+                    Administration
+                </p>
+                <h1 className="text-2xl font-bold">Nouvelle capture</h1>
+                <p className="text-sm text-slate-400">
+                    Les champs obligatoires sont marqués d’un astérisque. Tu peux passer d’un onglet à
+                    l’autre sans perdre ce qui est déjà saisi.
+                </p>
+            </header>
 
-            {error && <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded mb-6">{error}</div>}
+            {error && (
+                <div className="mb-6 rounded border border-red-500 bg-red-500/10 p-3 text-red-400">
+                    {error}
+                </div>
+            )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Informations générales</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Titre de la photo</label>
-                            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Nom technique<RequiredField /></label>
-                            <input required type="text" value={target} onChange={(e) => setTarget(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Catégorie<RequiredField /></label>
-                            <select value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2">
-                                <option value={"Ciel profond"}>Ciel profond</option>
-                                <option value={"Lunaire"}>Lunaire</option>
-                                <option value={"Solaire"}>Solaire</option>
-                                <option value={"Planétaire"}>Planétaire</option>
-                                <option value={"Open Field"}>Open Field</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Date de capture<RequiredField /></label>
-                            <input required type="date" value={captureDate} onChange={(e) => setCaptureDate(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Image<RequiredField /></label>
-                            <UploadButton resource={publicId} setResource={setPublicId} handler={handleMainUploadSuccess} label="Uploader l'image principale" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">PublicID Cloudinary (annoté)</label>
-                            <UploadButton resource={annotatedPublicId} setResource={setAnnotatedPublicId} handler={handleAnnotatedUploadSuccess} label="Uploader la version annotée"
-                            />
-                        </div>
-                    </div>
-                </section>
-                <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Matériel & Optique</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Optique / Télescope<RequiredField /></label>
-                            <input required type="text" list="optics-list" value={optics} onChange={(e) => setOptics(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                            <datalist id="optics-list">
-                                {suggestions.optics.map((item) => (
-                                    <option key={item} value={item} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Caméra / Capteur<RequiredField /></label>
-                            <input required type="text" list="camera-list" value={camera} onChange={(e) => setCamera(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                            <datalist id="camera-list">
-                                {suggestions.camera.map((item) => (
-                                    <option key={item} value={item} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Monture</label>
-                            <input type="text" list="mount-list" value={mount} onChange={(e) => setMount(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                            <datalist id="mount-list">
-                                {suggestions.mount.map((item) => (
-                                    <option key={item} value={item} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Accessoires</label>
-                            <input type="text" list="accessories-list" value={accessories} onChange={(e) => setAccessories(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                            <datalist id="accessories-list">
-                                {suggestions.accessories.map((item) => (
-                                    <option key={item} value={item} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Focale (mm)</label>
-                            <input type="number" value={focalLength} onChange={(e) => setFocalLength(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Rapport F/D</label>
-                            <input type="number" value={fNumber} onChange={(e) => setFNumber(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                    </div>
-                </section>
-                <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Données d&apos;acquisition & Traitement</h2>
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium">Poses<RequiredField /></label>
-                        {captureRows.map((row, index) => (
-                            <div className="flex gap-2 items-center" key={index}>
-                                <input type="text" list="filters-list" placeholder="Filtre / Type" value={row.filter} onChange={(e) => updateCaptureRow(index, "filter", e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
-                                <input type="number" placeholder="Nombre" value={row.count || ""} onChange={(e) => updateCaptureRow(index, "count", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
-                                <input type="number" placeholder="Temps d'exposition (s)" value={row.exposure} onChange={(e) => updateCaptureRow(index, "exposure", Number(e.target.value))} className="flex-1 bg-slate-800 border border-slate-700 rounded p-2" />
-                                <button type="button" onClick={() => removeCaptureRow(index)} className="px-3 py-2 bg-red-500/2 text-red-400 hover:bg-red-500/30 rounded">×</button>
-                            </div>
-                        ))}
-                        <datalist id="filters-list">
-                            {suggestions.filters.map((f) => (
-                                <option key={f} value={f} />
-                            ))}
-                        </datalist>
-                        <button type="button" onClick={addCaptureRow} className="text-sm text-cyan-400 hover:underline pt-1 block"> + Ajouter une ligne de poses</button>
-                    </div>
-                    <div className="pt-2">
-                        <label className="block text-sm font-medium mb-1">Logiciels de traitement</label>
-                        <input type="text" list="processing-softwares-list" value={processingSoftwares} onChange={(e) => setProcessingSoftwares(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
-                        <datalist id="processing-softwares-list">
-                            {suggestions.processing_softwares.map((item) => (
-                                <option key={item} value={item} />
-                            ))}
-                        </datalist>
-                    </div>
-                </section>
-                <section className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
-                    <h2 className="text-lg font-semibold text-slate-200">Localisation & Astrométrie</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Lieu</label>
-                            <input type="text" list="location-list" value={location} onChange={(e) => setLocation(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded p-2"/>
-                            <datalist id="location-list">
-                                {suggestions.location.map((item) => (
-                                    <option key={item} value={item} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Classe Bortle</label>
-                            <input type="number" min={1} max={9} step={0.1} value={bortleClass} onChange={(e) => setBortleClass(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Ascension droite (°)</label>
-                            <input type="number" min={0} max={360} step="any" value={ra} onChange={(e) => setRa(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Déclinaison (°)</label>
-                            <input type="number" min={-90} max={90} step="any" value={dec} onChange={(e) => setDec(e.target.value === "" ? "" : Number(e.target.value))} className="w-full bg-slate-800 border border-slate-700 rounded p-2" />
-                        </div>
-                    </div>
-                </section>
-                <button type="submit" disabled={loading} className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-medium rounded-lg transition">{loading ? "Enregistrement..." : <><Send />Publier</>}</button>
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                <FormTabs
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    tabs={[
+                        {
+                            ...generalTab,
+                            content: (
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Titre de la photo
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Nom technique<RequiredField />
+                                        </label>
+                                        <input
+                                            required
+                                            type="text"
+                                            value={target}
+                                            onChange={(e) => setTarget(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Catégorie<RequiredField />
+                                        </label>
+                                        <select
+                                            required
+                                            value={targetCategory}
+                                            onChange={(e) => setTargetCategory(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        >
+                                            <option value="" disabled>
+                                                Choisir une catégorie
+                                            </option>
+                                            <option value="Ciel profond">Ciel profond</option>
+                                            <option value="Lunaire">Lunaire</option>
+                                            <option value="Solaire">Solaire</option>
+                                            <option value="Planétaire">Planétaire</option>
+                                            <option value="Open Field">Open Field</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Date de capture<RequiredField />
+                                        </label>
+                                        <input
+                                            required
+                                            type="date"
+                                            value={captureDate}
+                                            onChange={(e) => setCaptureDate(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Image<RequiredField />
+                                        </label>
+                                        <UploadButton
+                                            resource={publicId}
+                                            setResource={setPublicId}
+                                            handler={handleMainUploadSuccess}
+                                            label="Uploader l'image principale"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            PublicID Cloudinary (annoté)
+                                        </label>
+                                        <UploadButton
+                                            resource={annotatedPublicId}
+                                            setResource={setAnnotatedPublicId}
+                                            handler={handleAnnotatedUploadSuccess}
+                                            label="Uploader la version annotée"
+                                        />
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            ...equipmentTab,
+                            content: (
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Optique / Télescope<RequiredField />
+                                        </label>
+                                        <input
+                                            required
+                                            type="text"
+                                            list="optics-list"
+                                            value={optics}
+                                            onChange={(e) => setOptics(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                        <datalist id="optics-list">
+                                            {suggestions.optics.map((item) => (
+                                                <option key={item} value={item} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Caméra / Capteur<RequiredField />
+                                        </label>
+                                        <input
+                                            required
+                                            type="text"
+                                            list="camera-list"
+                                            value={camera}
+                                            onChange={(e) => setCamera(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                        <datalist id="camera-list">
+                                            {suggestions.camera.map((item) => (
+                                                <option key={item} value={item} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">Monture</label>
+                                        <input
+                                            type="text"
+                                            list="mount-list"
+                                            value={mount}
+                                            onChange={(e) => setMount(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                        <datalist id="mount-list">
+                                            {suggestions.mount.map((item) => (
+                                                <option key={item} value={item} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">Focale (mm)</label>
+                                        <input
+                                            type="number"
+                                            value={focalLength}
+                                            onChange={(e) =>
+                                                setFocalLength(e.target.value === "" ? "" : Number(e.target.value))
+                                            }
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">Rapport F/D</label>
+                                        <input
+                                            type="number"
+                                            value={fNumber}
+                                            onChange={(e) =>
+                                                setFNumber(e.target.value === "" ? "" : Number(e.target.value))
+                                            }
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <ListField
+                                            label="Accessoires"
+                                            values={accessories}
+                                            onChange={setAccessories}
+                                            suggestions={suggestions.accessories}
+                                            placeholder="Barlow 2×, réducteur…"
+                                        />
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            ...acquisitionTab,
+                            content: (
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <p className="block text-sm font-medium">
+                                            Poses<RequiredField />
+                                        </p>
+                                        {captureRows.map((row, index) => (
+                                            <div
+                                                key={index}
+                                                className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1.4fr)_repeat(2,minmax(0,1fr))_auto]"
+                                            >
+                                                <input
+                                                    type="text"
+                                                    list="filters-list"
+                                                    placeholder="Filtre / Type"
+                                                    aria-label={`Filtre de la pose ${index + 1}`}
+                                                    value={row.filter}
+                                                    onChange={(e) =>
+                                                        updateCaptureRow(index, "filter", e.target.value)
+                                                    }
+                                                    className="rounded border border-slate-700 bg-slate-800 p-2"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    placeholder="Nombre"
+                                                    aria-label={`Nombre de poses ${index + 1}`}
+                                                    value={row.count || ""}
+                                                    onChange={(e) =>
+                                                        updateCaptureRow(index, "count", Number(e.target.value))
+                                                    }
+                                                    className="rounded border border-slate-700 bg-slate-800 p-2"
+                                                />
+                                                <input
+                                                    type="number"
+                                                    placeholder="Exposition (s)"
+                                                    aria-label={`Temps d'exposition de la pose ${index + 1}`}
+                                                    value={row.exposure}
+                                                    onChange={(e) =>
+                                                        updateCaptureRow(index, "exposure", Number(e.target.value))
+                                                    }
+                                                    className="rounded border border-slate-700 bg-slate-800 p-2"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeCaptureRow(index)}
+                                                    aria-label={`Supprimer la pose ${index + 1}`}
+                                                    className="rounded bg-red-500/20 px-3 py-2 text-red-400 transition hover:bg-red-500/30"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <datalist id="filters-list">
+                                            {suggestions.filters.map((filter) => (
+                                                <option key={filter} value={filter} />
+                                            ))}
+                                        </datalist>
+                                        <button
+                                            type="button"
+                                            onClick={addCaptureRow}
+                                            className="block pt-1 text-sm text-cyan-400 hover:underline"
+                                        >
+                                            + Ajouter une ligne de poses
+                                        </button>
+                                    </div>
+
+                                    <ListField
+                                        label="Logiciels de traitement"
+                                        values={processingSoftwares}
+                                        onChange={setProcessingSoftwares}
+                                        suggestions={suggestions.processing_softwares}
+                                        placeholder="Siril, AutoStakkert!…"
+                                    />
+                                </div>
+                            ),
+                        },
+                        {
+                            ...locationTab,
+                            content: (
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                    <div className="md:col-span-2">
+                                        <label className="mb-1 block text-sm font-medium">Lieu</label>
+                                        <input
+                                            type="text"
+                                            list="location-list"
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                        <datalist id="location-list">
+                                            {suggestions.location.map((item) => (
+                                                <option key={item} value={item} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Classe Bortle
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={9}
+                                            step={0.1}
+                                            value={bortleClass}
+                                            onChange={(e) =>
+                                                setBortleClass(e.target.value === "" ? "" : Number(e.target.value))
+                                            }
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Ascension droite (°)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={360}
+                                            step="any"
+                                            value={ra}
+                                            onChange={(e) =>
+                                                setRa(e.target.value === "" ? "" : Number(e.target.value))
+                                            }
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium">
+                                            Déclinaison (°)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min={-90}
+                                            max={90}
+                                            step="any"
+                                            value={dec}
+                                            onChange={(e) =>
+                                                setDec(e.target.value === "" ? "" : Number(e.target.value))
+                                            }
+                                            className="w-full rounded border border-slate-700 bg-slate-800 p-2"
+                                        />
+                                    </div>
+                                </div>
+                            ),
+                        },
+                    ]}
+                />
+
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 px-6 py-3 font-medium text-white transition hover:bg-cyan-500 disabled:opacity-50"
+                >
+                    {loading ? (
+                        "Enregistrement..."
+                    ) : (
+                        <>
+                            <Send className="h-4 w-4" />
+                            Publier
+                        </>
+                    )}
+                </button>
             </form>
         </div>
-    )
+    );
 }

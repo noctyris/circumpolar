@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import { auth } from "@root/auth";
 import sql from "@/app/lib/data";
+import { prepareListForDb } from "@/app/lib/list-columns";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -57,6 +58,14 @@ export async function PUT(
       location,
     } = data;
 
+    const accessoryList = await prepareListForDb(accessories, "accessories");
+    const softwareList = await prepareListForDb(
+      processing_software ?? processing_softwares,
+      "processing_software"
+    );
+    const accessoryParam = Array.isArray(accessoryList) ? sql.json(accessoryList) : accessoryList;
+    const softwareParam = Array.isArray(softwareList) ? sql.json(softwareList) : softwareList;
+
     // Même validation que pour la création
     if (
       !target ||
@@ -83,11 +92,11 @@ export async function PUT(
         optics = ${optics},
         camera = ${camera},
         mount = ${mount || null},
-        accessories = ${accessories || null},
+        accessories = ${accessoryParam},
         focal_length = ${focal_length !== null && focal_length !== undefined ? focal_length : null},
         f_number = ${f_number !== null && f_number !== undefined ? f_number : null},
         capture_data = ${sql.json(capture_data && capture_data.length > 0 ? capture_data : [])},
-        processing_software = ${processing_software || processing_softwares || null},
+        processing_software = ${softwareParam},
         ra = ${ra !== null && ra !== undefined ? ra : null},
         dec = ${dec !== null && dec !== undefined ? dec : null},
         bortle_class = ${bortle_class !== null && bortle_class !== undefined ? bortle_class : null},

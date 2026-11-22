@@ -1,9 +1,11 @@
 // app/image/[id]/page.tsx
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { getCldImageUrl } from "next-cloudinary";
 import { fetchSingleImage } from "@/app/lib/data";
 import ImagePageClient from "@/components/ImagePageClient";
+import { ImagePageSkeleton } from "@/components/Skeletons";
 
 function parseId(raw: string): number | null {
   const id = Number(raw);
@@ -54,14 +56,22 @@ export async function generateMetadata({
   };
 }
 
-export default async function ImagePage({ params }: { params: Promise<{ id: string }> }) {
-  const id = parseId((await params).id);
-  if (id === null) notFound();
-
+async function ImageContent({ id }: { id: number }) {
   const images = await fetchSingleImage(id);
   const image = images[0];
 
   if (!image) notFound();
 
   return <ImagePageClient image={image} />;
+}
+
+export default async function ImagePage({ params }: { params: Promise<{ id: string }> }) {
+  const id = parseId((await params).id);
+  if (id === null) notFound();
+
+  return (
+    <Suspense fallback={<ImagePageSkeleton />}>
+      <ImageContent id={id} />
+    </Suspense>
+  );
 }

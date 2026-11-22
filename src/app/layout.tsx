@@ -1,5 +1,7 @@
 import AdminAccessButton from '@/components/AdminAccessButton';
 import Footer from "@/components/Footer"
+import SiteLogo from "@/components/SiteLogo";
+import Link from "next/link";
 import { Syncopate, Sora, Geist } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import type { Metadata } from "next";
@@ -62,9 +64,21 @@ export default async function RootLayout({
                 className="font-geist antialiased text-white min-h-screen flex flex-col"
             >
                 <SessionProvider session={session}>{modal}<div id="modal-root" />
-                    <header className="max-w-7xl mx-auto p-4 pb-0 flex items-center justify-between w-full">
-                        <h1 className="font-title text-3xl md:text-5xl uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-4">Circumpolar</h1>
-                        <AdminAccessButton isAuth={!!session} />
+                    <header className="max-w-7xl mx-auto p-4 pb-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 w-full">
+                        <h1 className="font-title text-2xl sm:text-4xl md:text-5xl uppercase tracking-[0.12em] sm:tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 m-0 min-w-0">
+                            <SiteLogo />
+                        </h1>
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <nav aria-label="Navigation principale" className="flex items-center gap-1">
+                                <Link href="/" className="hidden sm:inline-flex rounded-full px-2.5 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/45 transition hover:bg-white/5 hover:text-white">
+                                    Galerie
+                                </Link>
+                                <Link href="/about" className="rounded-full px-2.5 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/45 transition hover:bg-white/5 hover:text-white">
+                                    À propos
+                                </Link>
+                            </nav>
+                            <AdminAccessButton isAuth={!!session} />
+                        </div>
                     </header>
                     <main className="max-w-7xl mx-auto p-4 flex-1 flex flex-col w-full">
                         {children}
