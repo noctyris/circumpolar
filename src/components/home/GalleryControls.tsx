@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   ArrowDownWideNarrow,
   ArrowUpDown,
@@ -37,6 +37,7 @@ export default function GalleryControls({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function update(key: "sort" | "order" | "group", value: string) {
@@ -58,14 +59,48 @@ export default function GalleryControls({
     });
   }
 
+  const sortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Date";
+  const groupLabel = GROUP_OPTIONS.find((option) => option.value === group)?.label;
+  const summary =
+    group === "none"
+      ? `${sortLabel} · ${order === "desc" ? "décroissant" : "croissant"}`
+      : `${sortLabel} · ${groupLabel}`;
+
   return (
-    <div
-      aria-busy={pending}
-      className={`relative rounded-2xl bg-gradient-to-r from-indigo-500/45 via-cyan-400/25 to-fuchsia-400/35 p-px shadow-[0_24px_80px_-52px_rgba(99,102,241,0.9)] transition-opacity ${
-        pending ? "opacity-70" : ""
-      }`}
-    >
-      <div className="flex flex-wrap items-center gap-2 rounded-[15px] bg-[#0b0b0f]/95 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md">
+    <div aria-busy={pending} className="space-y-2">
+      <button
+        type="button"
+        onClick={() => setFiltersOpen((open) => !open)}
+        aria-expanded={filtersOpen}
+        aria-controls="gallery-filters"
+        className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0b0f]/90 px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-indigo-300/25 sm:hidden"
+      >
+        {pending ? (
+          <LoaderCircle className="h-4 w-4 animate-spin text-indigo-300" aria-hidden="true" />
+        ) : (
+          <SlidersHorizontal className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+        )}
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">
+          Filtres
+        </span>
+        <span className="ml-auto min-w-0 truncate font-body text-xs text-white/35">
+          {summary}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-white/40 transition-transform ${
+            filtersOpen ? "rotate-180" : ""
+          }`}
+          aria-hidden="true"
+        />
+      </button>
+
+      <div id="gallery-filters" className={`${filtersOpen ? "block" : "hidden"} sm:block`}>
+        <div
+          className={`relative rounded-2xl bg-gradient-to-r from-indigo-500/45 via-cyan-400/25 to-fuchsia-400/35 p-px shadow-[0_24px_80px_-52px_rgba(99,102,241,0.9)] transition-opacity ${
+            pending ? "opacity-70" : ""
+          }`}
+        >
+          <div className="flex flex-wrap items-center gap-2 rounded-[15px] bg-[#0b0b0f]/95 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md">
         <span className="flex shrink-0 items-center gap-2 pl-1 pr-1">
           {pending ? (
             <LoaderCircle className="h-3.5 w-3.5 animate-spin text-indigo-300" aria-hidden="true" />
@@ -175,10 +210,13 @@ export default function GalleryControls({
           </span>
         </label>
 
-        <span className="sr-only" role="status" aria-live="polite">
-          {pending ? "Mise à jour de la galerie" : ""}
-        </span>
+          </div>
+        </div>
       </div>
+
+      <span className="sr-only" role="status" aria-live="polite">
+        {pending ? "Mise à jour de la galerie" : ""}
+      </span>
     </div>
   );
 }

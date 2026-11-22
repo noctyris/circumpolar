@@ -1,7 +1,7 @@
 import AdminAccessButton from '@/components/AdminAccessButton';
 import Footer from "@/components/Footer"
 import SiteLogo from "@/components/SiteLogo";
-import Link from "next/link";
+import SiteNav from "@/components/SiteNav";
 import { Syncopate, Sora, Geist } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import type { Metadata } from "next";
@@ -69,14 +69,7 @@ export default async function RootLayout({
                             <SiteLogo />
                         </h1>
                         <div className="flex items-center gap-2 sm:gap-4">
-                            <nav aria-label="Navigation principale" className="flex items-center gap-1">
-                                <Link href="/" className="hidden sm:inline-flex rounded-full px-2.5 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/45 transition hover:bg-white/5 hover:text-white">
-                                    Galerie
-                                </Link>
-                                <Link href="/about" className="rounded-full px-2.5 py-2 font-subtitle text-[10px] uppercase tracking-widest text-white/45 transition hover:bg-white/5 hover:text-white">
-                                    À propos
-                                </Link>
-                            </nav>
+                            <SiteNav />
                             <AdminAccessButton isAuth={!!session} />
                         </div>
                     </header>

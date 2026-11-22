@@ -71,6 +71,19 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <div className="space-y-5">
+      <div className="space-y-2 pt-1">
+        <p className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.28em] text-indigo-200/65">
+          <span
+            aria-hidden="true"
+            className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-indigo-400 to-cyan-300 shadow-[0_0_8px_rgba(99,102,241,0.8)]"
+          />
+          Galerie
+        </p>
+        <p className="max-w-2xl font-body text-sm leading-relaxed text-white/50 sm:text-base">
+          Ciel profond, Lune, Soleil et planétaire, capturés depuis le Morbihan.
+        </p>
+      </div>
+
       <GalleryControls sort={sort} order={order} group={group} />
 
       <Suspense key={`${sort}-${order}-${group}`} fallback={<GallerySkeleton />}>

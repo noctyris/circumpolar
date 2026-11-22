@@ -32,12 +32,12 @@ export default function AstroImage({ image }: { image: Picture }) {
           {image.target_category}
         </span>
 
-        <div className="absolute inset-x-0 bottom-0 z-20 translate-y-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 z-20 translate-y-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 opacity-100 transition-all duration-500 ease-out lg:translate-y-4 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100">
           <span className="font-subtitle text-xs font-light uppercase tracking-[0.2em] text-white">
             {image.title || image.target}
           </span>
 
-          <div className="mt-2 h-[1px] w-0 bg-gradient-to-r from-indigo-400 via-cyan-300 to-fuchsia-300 transition-all delay-100 duration-700 group-hover:w-full" />
+          <div className="mt-2 h-[1px] w-full bg-gradient-to-r from-indigo-400 via-cyan-300 to-fuchsia-300 transition-all delay-100 duration-700 lg:w-0 lg:group-hover:w-full" />
         </div>
 
         <div className="absolute inset-0 z-30" onContextMenu={(e) => e.preventDefault()} />
