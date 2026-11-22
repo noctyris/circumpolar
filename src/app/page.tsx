@@ -43,11 +43,15 @@ async function GalleryData({
       {groupPictures(images, group).map((section) => (
         <section key={section.key} className="space-y-4">
           {section.label && (
-            <div className="flex items-baseline justify-between gap-4 border-b border-white/5 pb-2">
-              <h2 className="font-subtitle text-xs uppercase tracking-[0.25em] text-white/60">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-2">
+              <h2 className="flex items-center gap-2 font-subtitle text-xs uppercase tracking-[0.25em] text-white/70">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-gradient-to-br from-indigo-400 via-cyan-300 to-fuchsia-300 shadow-[0_0_10px_rgba(99,102,241,0.7)]"
+                />
                 {section.label}
               </h2>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-white/30">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-indigo-200/55">
                 {section.images.length} image{section.images.length > 1 ? "s" : ""}
               </span>
             </div>
